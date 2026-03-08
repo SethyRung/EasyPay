@@ -1,58 +1,83 @@
 package com.sethy.easypay.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
-
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
-)
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+    primary = BrandBlack,
+    onPrimary = BrandLight,
+    primaryContainer = OffWhite,
+    onPrimaryContainer = BrandBlack,
 
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    secondary = GrayDark,
+    onSecondary = BrandLight,
+    secondaryContainer = OffWhite,
+    onSecondaryContainer = BrandBlack,
+
+    tertiary = GrayMedium,
+    onTertiary = BrandLight,
+
+    background = BrandLight,
+    onBackground = BrandBlack,
+
+    surface = BrandLight,
+    onSurface = BrandBlack,
+    surfaceVariant = OffWhite,
+    onSurfaceVariant = GrayDark,
+
+    outline = GrayDark,
+    outlineVariant = GrayMedium,
+)
+
+private val DarkColorScheme = darkColorScheme(
+    primary = BrandLight,
+    onPrimary = BrandBlack,
+    primaryContainer = BrandBlack,
+    onPrimaryContainer = BrandLight,
+
+    secondary = GrayMedium,
+    onSecondary = BrandBlack,
+    secondaryContainer = BrandBlack,
+    onSecondaryContainer = BrandLight,
+
+    tertiary = GrayDark,
+    onTertiary = BrandBlack,
+
+    background = BrandBlack,
+    onBackground = BrandLight,
+
+    surface = BrandBlack,
+    onSurface = BrandLight,
+    surfaceVariant = GrayDark,
+    onSurfaceVariant = GrayMedium,
+
+    outline = GrayMedium,
+    outlineVariant = GrayDark,
 )
 
 @Composable
 fun EasyPayTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    // Dynamic color is disabled to maintain brand consistency
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            // Use light scheme for dynamic colors to maintain brand identity
+            LightColorScheme
         }
-
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
+        typography = AppTypography,
         content = content
     )
 }
