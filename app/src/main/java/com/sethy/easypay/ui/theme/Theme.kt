@@ -62,13 +62,11 @@ private val DarkColorScheme = darkColorScheme(
 @Composable
 fun EasyPayTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is disabled to maintain brand consistency
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            // Use light scheme for dynamic colors to maintain brand identity
             LightColorScheme
         }
         darkTheme -> DarkColorScheme

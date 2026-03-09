@@ -8,17 +8,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.sethy.easypay.R
 
-// IBM Plex Sans Font Family
 val IBMPlexSans = FontFamily(
     Font(R.font.ibm_plex_sans_medium, FontWeight.Medium),
     Font(R.font.ibm_plex_sans_semibold, FontWeight.SemiBold),
 )
 
-// Roboto is the default Material font family
 val RobotoFamily = FontFamily.Default
 
 val AppTypography = Typography(
-    // Display styles - IBM Plex Sans Semibold
     displayLarge = TextStyle(
         fontFamily = IBMPlexSans,
         fontWeight = FontWeight.SemiBold,
@@ -41,7 +38,6 @@ val AppTypography = Typography(
         letterSpacing = 0.sp
     ),
 
-    // Headline styles - IBM Plex Sans Semibold
     headlineLarge = TextStyle(
         fontFamily = IBMPlexSans,
         fontWeight = FontWeight.SemiBold,
@@ -64,7 +60,6 @@ val AppTypography = Typography(
         letterSpacing = 0.sp
     ),
 
-    // Title styles - IBM Plex Sans Medium
     titleLarge = TextStyle(
         fontFamily = IBMPlexSans,
         fontWeight = FontWeight.Medium,
@@ -87,7 +82,6 @@ val AppTypography = Typography(
         letterSpacing = 0.1.sp
     ),
 
-    // Body styles - Roboto
     bodyLarge = TextStyle(
         fontFamily = RobotoFamily,
         fontWeight = FontWeight.Normal,
@@ -110,7 +104,6 @@ val AppTypography = Typography(
         letterSpacing = 0.4.sp
     ),
 
-    // Label styles - Roboto Medium
     labelLarge = TextStyle(
         fontFamily = RobotoFamily,
         fontWeight = FontWeight.Medium,
