@@ -1,5 +1,6 @@
 package com.sethy.easypay.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -13,11 +14,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
-import coil.decode.SvgDecoder
-import coil.request.ImageRequest
+import com.sethy.easypay.R
 import com.sethy.easypay.ui.components.PrimaryButton
 import com.sethy.easypay.ui.components.SecondaryButton
 import com.sethy.easypay.ui.theme.AppTypography
@@ -38,14 +38,10 @@ fun OnboardingScreen(
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        AsyncImage(
-                            model = ImageRequest.Builder(context)
-                                .data("file:///android_asset/logo.svg")
-                                .decoderFactory(SvgDecoder.Factory())
-                                .build(),
+                        Image(
+                            painter = painterResource(id = R.drawable.logo),
                             contentDescription = "EasyPay Logo",
-                            modifier = Modifier
-                                .size(24.dp),
+                            modifier = Modifier.size(24.dp),
                             contentScale = ContentScale.Fit
                         )
 
@@ -68,11 +64,8 @@ fun OnboardingScreen(
                     .padding(horizontal = 16.dp, vertical = 32.dp),
                 contentAlignment = Alignment.Center
             ) {
-                AsyncImage(
-                    model = ImageRequest.Builder(context)
-                        .data("file:///android_asset/onboarding.svg")
-                        .decoderFactory(SvgDecoder.Factory())
-                        .build(),
+                Image(
+                    painter = painterResource(R.drawable.onboarding),
                     contentDescription = "Onboarding Illustration",
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Fit
