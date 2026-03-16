@@ -42,7 +42,7 @@ enum class BottomNavItem {
 }
 
 @Composable
-fun BottomNavigationBar(
+fun AppBottomBar(
     selectedTab: BottomNavItem,
     onTabSelected: (BottomNavItem) -> Unit,
     onScanClicked: () -> Unit,
