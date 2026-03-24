@@ -13,16 +13,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBalanceWallet
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.QrCode
-import androidx.compose.material.icons.filled.Receipt
-import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.automirrored.outlined.Send
-import androidx.compose.material.icons.outlined.AddCircle
-import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -40,6 +30,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.composables.icons.lucide.BadgeDollarSign
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.MapPin
+import com.composables.icons.lucide.Phone
+import com.composables.icons.lucide.CirclePlus
+import com.composables.icons.lucide.QrCode
+import com.composables.icons.lucide.Receipt
+import com.composables.icons.lucide.Send
+import com.composables.icons.lucide.ShoppingCart
+import com.composables.icons.lucide.Wallet
 import com.sethy.easypay.data.model.Transaction
 import com.sethy.easypay.data.model.User
 import com.sethy.easypay.ui.components.AppTopBar
@@ -108,7 +108,7 @@ fun HomeScreen(
                 Column (
                     horizontalAlignment = Alignment.CenterHorizontally
                 ){
-                   Icon(imageVector = Icons.Outlined.AddCircle, contentDescription = "Add")
+                   Icon(imageVector = Lucide.CirclePlus, contentDescription = "Add")
 
                     Text("Top Up")
                 }
@@ -118,7 +118,7 @@ fun HomeScreen(
                 Column (
                     horizontalAlignment = Alignment.CenterHorizontally
                 ){
-                   Icon(imageVector = Icons.AutoMirrored.Outlined.Send, contentDescription = "Send")
+                   Icon(imageVector = Lucide.Send, contentDescription = "Send")
 
                     Text("Send")
                 }
@@ -128,7 +128,7 @@ fun HomeScreen(
                 Column (
                     horizontalAlignment = Alignment.CenterHorizontally
                 ){
-                   Icon(imageVector = Icons.Outlined.AddCircle, contentDescription = null)
+                   Icon(imageVector = Lucide.BadgeDollarSign, contentDescription = null)
 
                     Text("Withdraw")
                 }
@@ -159,32 +159,32 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 QuickActionItem(
-                    icon = Icons.AutoMirrored.Filled.Send,
+                    icon = Lucide.Send,
                     label = "Send",
                     onClick = onSendMoneyClick
                 )
                 QuickActionItem(
-                    icon = Icons.Default.QrCode,
+                    icon = Lucide.QrCode,
                     label = "QR Pay",
                     onClick = { }
                 )
                 QuickActionItem(
-                    icon = Icons.Default.LocationOn,
+                    icon = Lucide.MapPin,
                     label = "Nearby",
                     onClick = { }
                 )
                 QuickActionItem(
-                    icon = Icons.Default.Phone,
+                    icon = Lucide.Phone,
                     label = "Mobile",
                     onClick = { }
                 )
                 QuickActionItem(
-                    icon = Icons.Default.AccountBalanceWallet,
+                    icon = Lucide.Wallet,
                     label = "Wallet",
                     onClick = { }
                 )
                 QuickActionItem(
-                    icon = Icons.Default.Receipt,
+                    icon = Lucide.Receipt,
                     label = "Bills",
                     onClick = { }
                 )
@@ -241,7 +241,7 @@ fun HomeScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Outlined.ShoppingCart,
+                            imageVector = Lucide.ShoppingCart,
                             contentDescription = "ShoppingCart",
                             tint = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier.size(24.dp)

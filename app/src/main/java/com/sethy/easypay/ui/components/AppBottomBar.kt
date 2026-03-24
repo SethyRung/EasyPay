@@ -14,16 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.QrCodeScanner
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.outlined.CalendarMonth
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -32,6 +22,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.composables.icons.lucide.Bell
+import com.composables.icons.lucide.Calendar
+import com.composables.icons.lucide.House
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.QrCode
+import com.composables.icons.lucide.User
 
 enum class BottomNavItem {
     HOME,
@@ -69,8 +65,8 @@ fun AppBottomBar(
             ) {
                 NavItem(
                     isSelected = selectedTab == BottomNavItem.HOME,
-                    iconSelected = Icons.Default.Home,
-                    iconUnselected = Icons.Outlined.Home,
+                    iconSelected = Lucide.House,
+                    iconUnselected = Lucide.House,
                     onClick = { onTabSelected(BottomNavItem.HOME) }
                 )
 
@@ -78,8 +74,8 @@ fun AppBottomBar(
 
                 NavItem(
                     isSelected = selectedTab == BottomNavItem.CALENDAR,
-                    iconSelected = Icons.Default.CalendarMonth,
-                    iconUnselected = Icons.Outlined.CalendarMonth,
+                    iconSelected = Lucide.Calendar,
+                    iconUnselected = Lucide.Calendar,
                     onClick = { onTabSelected(BottomNavItem.CALENDAR) }
                 )
 
@@ -91,8 +87,8 @@ fun AppBottomBar(
 
                 NavItem(
                     isSelected = selectedTab == BottomNavItem.NOTIFICATIONS,
-                    iconSelected = Icons.Default.Notifications,
-                    iconUnselected = Icons.Outlined.Notifications,
+                    iconSelected = Lucide.Bell,
+                    iconUnselected = Lucide.Bell,
                     onClick = { onTabSelected(BottomNavItem.NOTIFICATIONS) }
                 )
 
@@ -100,8 +96,8 @@ fun AppBottomBar(
 
                 NavItem(
                     isSelected = selectedTab == BottomNavItem.PROFILE,
-                    iconSelected = Icons.Default.Person,
-                    iconUnselected = Icons.Outlined.Person,
+                    iconSelected = Lucide.User,
+                    iconUnselected = Lucide.User,
                     onClick = { onTabSelected(BottomNavItem.PROFILE) }
                 )
             }
@@ -157,7 +153,7 @@ private fun FloatingScanButton(
         contentAlignment = Alignment.Center
     ) {
         Icon(
-            imageVector = Icons.Default.QrCodeScanner,
+            imageVector = Lucide.QrCode,
             contentDescription = "Scan",
             tint = Color.White,
             modifier = Modifier.size(28.dp)

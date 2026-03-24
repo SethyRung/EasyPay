@@ -12,9 +12,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDownward
-import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -24,6 +21,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.composables.icons.lucide.ArrowDown
+import com.composables.icons.lucide.ArrowUp
+import com.composables.icons.lucide.Lucide
 import com.sethy.easypay.data.model.Transaction
 import com.sethy.easypay.data.model.TransactionType
 import java.text.SimpleDateFormat
@@ -69,9 +69,9 @@ fun TransactionItem(
                 ) {
                     Icon(
                         imageVector = if (transaction.type == TransactionType.RECEIVED)
-                            Icons.Default.ArrowDownward
+                            Lucide.ArrowDown
                         else
-                            Icons.Default.ArrowUpward,
+                            Lucide.ArrowUp,
                         contentDescription = null,
                         tint = if (transaction.type == TransactionType.RECEIVED)
                             MaterialTheme.colorScheme.primary
