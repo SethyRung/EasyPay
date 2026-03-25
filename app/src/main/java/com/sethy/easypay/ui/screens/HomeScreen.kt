@@ -114,7 +114,7 @@ fun HomeScreen(
                 }
             }
 
-            Button(onClick = {}, shape = RoundedCornerShape(4.dp)){
+            Button(onClick = onSendMoneyClick, shape = RoundedCornerShape(4.dp)){
                 Column (
                     horizontalAlignment = Alignment.CenterHorizontally
                 ){
@@ -161,7 +161,7 @@ fun HomeScreen(
                 QuickActionItem(
                     icon = Lucide.Send,
                     label = "Send",
-                    onClick = onSendMoneyClick
+                    onClick = {}
                 )
                 QuickActionItem(
                     icon = Lucide.QrCode,
