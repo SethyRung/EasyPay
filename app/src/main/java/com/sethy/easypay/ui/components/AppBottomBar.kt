@@ -145,11 +145,7 @@ private fun FloatingScanButton(
             .size(56.dp)
             .clip(CircleShape)
             .background(Color.Black)
-            .clickable(onClick = onClick)
-            .border(
-                border = BorderStroke(4.dp, Color.White),
-                shape = CircleShape
-            ),
+            .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
         Icon(
