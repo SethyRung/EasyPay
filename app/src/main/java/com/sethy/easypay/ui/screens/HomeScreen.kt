@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -39,6 +40,14 @@ import com.composables.icons.lucide.QrCode
 import com.composables.icons.lucide.Receipt
 import com.composables.icons.lucide.Send
 import com.composables.icons.lucide.ShoppingCart
+import com.composables.icons.lucide.Car
+import com.composables.icons.lucide.Droplet
+import com.composables.icons.lucide.House
+import com.composables.icons.lucide.Landmark
+import com.composables.icons.lucide.LayoutGrid
+import com.composables.icons.lucide.Tv
+import com.composables.icons.lucide.Globe
+import com.composables.icons.lucide.Zap
 import com.composables.icons.lucide.Wallet
 import com.sethy.easypay.data.model.Transaction
 import com.sethy.easypay.data.model.User
@@ -47,6 +56,8 @@ import com.sethy.easypay.ui.components.BottomNavItem
 import com.sethy.easypay.ui.components.AppBottomBar
 import com.sethy.easypay.ui.components.QuickActionItem
 import com.sethy.easypay.ui.components.TransactionItem
+import com.sethy.easypay.ui.theme.BrandBlack
+import com.sethy.easypay.ui.theme.GrayDark
 import com.sethy.easypay.ui.theme.OffWhite
 import java.util.Locale
 
@@ -150,44 +161,81 @@ fun HomeScreen(
                 .fillMaxWidth()
                 .background(
                     color = Color.White,
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(12.dp)
                 )
-                .padding(16.dp)
+                .padding(horizontal = 14.dp, vertical = 18.dp)
         ) {
-            Row(
+            Column(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                QuickActionItem(
-                    icon = Lucide.Send,
-                    label = "Send",
-                    onClick = {}
-                )
-                QuickActionItem(
-                    icon = Lucide.QrCode,
-                    label = "QR Pay",
-                    onClick = { }
-                )
-                QuickActionItem(
-                    icon = Lucide.MapPin,
-                    label = "Nearby",
-                    onClick = { }
-                )
-                QuickActionItem(
-                    icon = Lucide.Phone,
-                    label = "Mobile",
-                    onClick = { }
-                )
-                QuickActionItem(
-                    icon = Lucide.Wallet,
-                    label = "Wallet",
-                    onClick = { }
-                )
-                QuickActionItem(
-                    icon = Lucide.Receipt,
-                    label = "Bills",
-                    onClick = { }
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(0.dp)
+                ) {
+                    QuickActionItem(
+                        icon = Lucide.Globe,
+                        label = "Internet",
+                        onClick = { },
+                        iconTint = BrandBlack,
+                        modifier = Modifier.weight(1f)
+                    )
+                    QuickActionItem(
+                        icon = Lucide.Droplet,
+                        label = "Water",
+                        onClick = { },
+                        iconTint = BrandBlack,
+                        modifier = Modifier.weight(1f)
+                    )
+                    QuickActionItem(
+                        icon = Lucide.Zap,
+                        label = "Electricity",
+                        onClick = { },
+                        iconTint = BrandBlack,
+                        modifier = Modifier.weight(1f)
+                    )
+                    QuickActionItem(
+                        icon = Lucide.Tv,
+                        label = "TV Cable",
+                        onClick = { },
+                        iconTint = BrandBlack,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(0.dp)
+                ) {
+                    QuickActionItem(
+                        icon = Lucide.Car,
+                        label = "Vehicle",
+                        onClick = { },
+                        iconTint = BrandBlack,
+                        modifier = Modifier.weight(1f)
+                    )
+                    QuickActionItem(
+                        icon = Lucide.House,
+                        label = "Rent Bill",
+                        onClick = { },
+                        iconTint = BrandBlack,
+                        modifier = Modifier.weight(1f)
+                    )
+                    QuickActionItem(
+                        icon = Lucide.Landmark,
+                        label = "Invest",
+                        onClick = { },
+                        iconTint = BrandBlack,
+                        modifier = Modifier.weight(1f)
+                    )
+                    QuickActionItem(
+                        icon = Lucide.LayoutGrid,
+                        label = "More",
+                        onClick = { },
+                        iconTint = BrandBlack,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
         }
 
