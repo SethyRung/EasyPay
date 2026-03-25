@@ -1,9 +1,6 @@
 package com.sethy.easypay.ui.theme
 
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 
@@ -33,45 +30,14 @@ private val LightColorScheme = lightColorScheme(
     outlineVariant = GrayMedium,
 )
 
-private val DarkColorScheme = darkColorScheme(
-    primary = BrandLight,
-    onPrimary = BrandBlack,
-    primaryContainer = BrandBlack,
-    onPrimaryContainer = BrandLight,
-
-    secondary = GrayMedium,
-    onSecondary = BrandBlack,
-    secondaryContainer = BrandBlack,
-    onSecondaryContainer = BrandLight,
-
-    tertiary = GrayDark,
-    onTertiary = BrandBlack,
-
-    background = BrandBlack,
-    onBackground = BrandLight,
-
-    surface = BrandBlack,
-    onSurface = BrandLight,
-    surfaceVariant = GrayDark,
-    onSurfaceVariant = GrayMedium,
-
-    outline = GrayMedium,
-    outlineVariant = GrayDark,
-)
-
 @Composable
+@Suppress("UNUSED_PARAMETER")
 fun EasyPayTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = false,
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            LightColorScheme
-        }
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
+    val colorScheme = LightColorScheme
 
     MaterialTheme(
         colorScheme = colorScheme,
