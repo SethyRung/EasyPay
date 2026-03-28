@@ -61,9 +61,7 @@ fun EasyPayApp() {
         }
     }
 
-    // Show loading state while data loads
     if (user == null) {
-        // Could add a loading screen here
         return
     }
 
@@ -109,9 +107,8 @@ fun EasyPayApp() {
             TransferSuccessScreen(
                 recipientName = screen.recipientName,
                 amount = screen.amount,
-                onDoneClick = { currentScreen = Screen.Home },
-                onTransferMoreClick = { currentScreen = Screen.SendMoney() },
-                onBackClick = { currentScreen = Screen.Home },
+                onDone = { currentScreen = Screen.Home },
+                onTransferMore = { currentScreen = Screen.SendMoney() },
                 modifier = Modifier.fillMaxSize()
             )
         }
