@@ -1,0 +1,26 @@
+[
+  {
+    "id": "1",
+    "recipientName": "John Smith",
+    "amount": 150.00,
+    "type": "SENT",
+    "timestamp": 1743139200000,
+    "avatarUrl": null
+  },
+  {
+    "id": "2",
+    "recipientName": "Alice Brown",
+    "amount": 200.00,
+    "type": "RECEIVED",
+    "timestamp": 1743225600000,
+    "avatarUrl": null
+  },
+  {
+    "id": "3",
+    "recipientName": "Mike Wilson",
+    "amount": 75.50,
+    "type": "SENT",
+    "timestamp": 1743312000000,
+    "avatarUrl": null
+  }
+]
