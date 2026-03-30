@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -133,6 +134,7 @@ fun LoginScreen(
                         placeholder = "you@example.com",
                         isError = loginState.emailError != null,
                         errorMessage = loginState.emailError,
+                        keyboardType = KeyboardType.Email,
                         leadingIcon = {
                             Icon(
                                 imageVector = Lucide.Mail,
