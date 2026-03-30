@@ -49,7 +49,6 @@ fun TransferSuccessScreen(
                 .padding(innerPadding)
                 .background(Color.White)
         ) {
-            // Top bar
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -81,7 +80,6 @@ fun TransferSuccessScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                // Success icon
                 Box(
                     modifier = Modifier
                         .size(100.dp)
@@ -123,11 +121,9 @@ fun TransferSuccessScreen(
                 )
             }
 
-            // Bottom buttons
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(OffWhite)
                     .padding(16.dp)
             ) {
                 PrimaryButton(
