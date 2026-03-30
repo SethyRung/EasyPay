@@ -9,11 +9,12 @@ import androidx.compose.ui.unit.sp
 import com.sethy.easypay.R
 
 val IBMPlexSans = FontFamily(
-    Font(R.font.ibm_plex_sans_medium, FontWeight.Medium),
-    Font(R.font.ibm_plex_sans_semibold, FontWeight.SemiBold),
+    Font(R.font.geist_regular, FontWeight.Normal),
+    Font(R.font.geist_medium, FontWeight.Medium),
+    Font(R.font.geist_semibold, FontWeight.SemiBold),
 )
 
-val RobotoFamily = FontFamily.Default
+val RobotoFamily = IBMPlexSans
 
 val AppTypography = Typography(
     displayLarge = TextStyle(
