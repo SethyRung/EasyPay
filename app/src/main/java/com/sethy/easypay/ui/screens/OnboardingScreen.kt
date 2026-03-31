@@ -25,7 +25,6 @@ import androidx.compose.ui.unit.dp
 import com.sethy.easypay.R
 import com.sethy.easypay.ui.components.PrimaryButton
 import com.sethy.easypay.ui.components.SecondaryButton
-import kotlinx.coroutines.delay
 
 @Composable
 fun OnboardingScreen(
@@ -42,16 +41,10 @@ fun OnboardingScreen(
     LaunchedEffect(Unit) {
         imageAlpha.animateTo(1f, animationSpec = tween(600))
         imageTranslationY.animateTo(0f, animationSpec = tween(600, easing = FastOutSlowInEasing))
-        
-        delay(100)
 
         titleAlpha.animateTo(1f, animationSpec = tween(500))
-        
-        delay(100)
 
         subtitleAlpha.animateTo(1f, animationSpec = tween(500))
-        
-        delay(100)
 
         buttonAlpha.animateTo(1f, animationSpec = tween(500))
     }
