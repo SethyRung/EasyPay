@@ -15,14 +15,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.sethy.easypay.data.MockDataLoader
+import com.sethy.easypay.data.local.AuthTokenManager
 import com.sethy.easypay.data.model.Transaction
 import com.sethy.easypay.data.model.TransactionType
 import com.sethy.easypay.data.model.User
+import com.sethy.easypay.domain.repository.AuthRepository
 import com.sethy.easypay.ui.screens.HomeScreen
 import com.sethy.easypay.ui.screens.OnboardingScreen
 import com.sethy.easypay.ui.screens.SendMoneyScreen
 import com.sethy.easypay.ui.screens.TransferSuccessScreen
+import com.sethy.easypay.ui.screens.auth.LoginScreen
+import com.sethy.easypay.ui.screens.auth.SignupScreen
 import com.sethy.easypay.ui.theme.EasyPayTheme
+import com.sethy.easypay.ui.viewmodel.AuthViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -40,6 +45,8 @@ class MainActivity : ComponentActivity() {
 
 sealed class Screen {
     object Onboarding : Screen()
+    object Login : Screen()
+    object Signup : Screen()
     object Home : Screen()
     data class SendMoney(val recipientName: String = "Nayantara V") : Screen()
     data class TransferSuccess(val recipientName: String, val amount: Double) : Screen()
@@ -52,24 +59,66 @@ fun EasyPayApp() {
     var currentScreen by remember { mutableStateOf<Screen>(Screen.Onboarding) }
     var user by remember { mutableStateOf<User?>(null) }
     var transactions by remember { mutableStateOf<List<Transaction>>(emptyList()) }
-
-    // Load mock data from assets
+    var isCheckingAuth by remember { mutableStateOf(true) }
+    val authViewModel = remember {
+        val tokenManager = AuthTokenManager(context)
+        val authRepository = AuthRepository(tokenManager)
+        AuthViewModel(authRepository)
+    }
     LaunchedEffect(Unit) {
-        withContext(Dispatchers.IO) {
-            user = MockDataLoader.loadUser(context)
-            transactions = MockDataLoader.loadTransactions(context)
+        authViewModel.checkAuthState(
+            onAuthenticated = { authenticatedUser ->
+                user = authenticatedUser
+                currentScreen = Screen.Home
+                isCheckingAuth = false
+            },
+            onUnauthenticated = {
+                isCheckingAuth = false
+            }
+        )
+    }
+    LaunchedEffect(user) {
+        if (user != null && transactions.isEmpty()) {
+            withContext(Dispatchers.IO) {
+                transactions = MockDataLoader.loadTransactions(context)
+            }
         }
     }
-
-    if (user == null) {
+    if (isCheckingAuth) {
         return
     }
 
     when (val screen = currentScreen) {
         is Screen.Onboarding -> {
             OnboardingScreen(
-                onLoginClick = { currentScreen = Screen.Home },
-                onSignUpClick = { currentScreen = Screen.Home },
+                onLoginClick = { currentScreen = Screen.Login },
+                onSignUpClick = { currentScreen = Screen.Signup },
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+
+        is Screen.Login -> {
+            LoginScreen(
+                viewModel = authViewModel,
+                onLoginSuccess = { authenticatedUser ->
+                    user = authenticatedUser
+                    currentScreen = Screen.Home
+                },
+                onSignupClick = { currentScreen = Screen.Signup },
+                onBackClick = { currentScreen = Screen.Onboarding },
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+
+        is Screen.Signup -> {
+            SignupScreen(
+                viewModel = authViewModel,
+                onSignupSuccess = { authenticatedUser ->
+                    user = authenticatedUser
+                    currentScreen = Screen.Home
+                },
+                onLoginClick = { currentScreen = Screen.Login },
+                onBackClick = { currentScreen = Screen.Onboarding },
                 modifier = Modifier.fillMaxSize()
             )
         }
