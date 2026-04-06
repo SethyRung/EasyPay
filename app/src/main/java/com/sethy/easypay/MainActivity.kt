@@ -19,7 +19,7 @@ import com.sethy.easypay.data.local.AuthTokenManager
 import com.sethy.easypay.data.model.Transaction
 import com.sethy.easypay.data.model.TransactionType
 import com.sethy.easypay.data.model.User
-import com.sethy.easypay.domain.repository.AuthRepository
+import com.sethy.easypay.data.repository.AuthRepository
 import com.sethy.easypay.ui.screens.HomeScreen
 import com.sethy.easypay.ui.screens.OnboardingScreen
 import com.sethy.easypay.ui.screens.SendMoneyScreen
