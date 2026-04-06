@@ -48,7 +48,7 @@ class WalletRepository(
         }
 
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:3001/api/")
+            .baseUrl("http://10.0.2.2:8080/api/")
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .client(client)
             .build()
