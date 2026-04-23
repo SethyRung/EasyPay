@@ -1,32 +1,30 @@
 package com.sethy.easypay.ui.screens
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.*
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.ChevronLeft
@@ -35,7 +33,8 @@ import com.composables.icons.lucide.Search
 import com.sethy.easypay.R
 import com.sethy.easypay.ui.components.PrimaryButton
 import com.sethy.easypay.ui.components.SendAmountKeypad
-import com.sethy.easypay.ui.theme.OffWhite
+import com.sethy.easypay.ui.theme.TextSecondary
+import kotlinx.coroutines.delay
 
 @Composable
 fun SendMoneyScreen(
@@ -46,20 +45,73 @@ fun SendMoneyScreen(
 ) {
     var amount by remember { mutableStateOf("0") }
 
+    val entranceProgress = remember { Animatable(0f) }
+
+    LaunchedEffect(Unit) {
+        delay(150)
+        entranceProgress.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(900, easing = FastOutSlowInEasing)
+        )
+    }
+
+    val avatarScale by animateFloatAsState(
+        targetValue = if (entranceProgress.value > 0.1f) 1f else 0.3f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+        label = "avatarScale"
+    )
+    val avatarAlpha by animateFloatAsState(
+        targetValue = if (entranceProgress.value > 0.1f) 1f else 0f,
+        animationSpec = tween(500),
+        label = "avatarAlpha"
+    )
+
+    val infoOffset by animateFloatAsState(
+        targetValue = if (entranceProgress.value > 0.25f) 0f else 40f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessMedium),
+        label = "infoOffset"
+    )
+    val infoAlpha by animateFloatAsState(
+        targetValue = if (entranceProgress.value > 0.25f) 1f else 0f,
+        animationSpec = tween(500),
+        label = "infoAlpha"
+    )
+
+    val keypadOffset by animateFloatAsState(
+        targetValue = if (entranceProgress.value > 0.4f) 0f else 80f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+        label = "keypadOffset"
+    )
+    val keypadAlpha by animateFloatAsState(
+        targetValue = if (entranceProgress.value > 0.4f) 1f else 0f,
+        animationSpec = tween(500),
+        label = "keypadAlpha"
+    )
+
+    val sendButtonScale by animateFloatAsState(
+        targetValue = if (entranceProgress.value > 0.55f) 1f else 0.9f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+        label = "sendButtonScale"
+    )
+    val sendButtonAlpha by animateFloatAsState(
+        targetValue = if (entranceProgress.value > 0.55f) 1f else 0f,
+        animationSpec = tween(400),
+        label = "sendButtonAlpha"
+    )
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.surface
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .background(MaterialTheme.colorScheme.surface)
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = onBackClick) {
@@ -71,7 +123,9 @@ fun SendMoneyScreen(
                 }
                 Text(
                     text = "Send Money",
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.SemiBold
+                    ),
                     color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.weight(1f)
                 )
@@ -84,46 +138,56 @@ fun SendMoneyScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 4.dp),
+                    .padding(horizontal = 24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Box(
                     modifier = Modifier
-                        .size(128.dp)
+                        .size(120.dp)
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                        .border(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.outlineVariant,
-                            shape = CircleShape
-                        ),
+                        .scale(avatarScale)
+                        .alpha(avatarAlpha)
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
                     contentAlignment = Alignment.Center
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.profile),
                         contentDescription = "Recipient",
-                        modifier = Modifier.size(128.dp)
+                        modifier = Modifier
+                            .size(116.dp)
+                            .clip(CircleShape)
                     )
                 }
 
-                Text(
-                    text = recipientName,
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.padding(top = 14.dp)
-                )
-                Text(
-                    text = "+91 8050530XXX",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 2.dp)
-                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Column(
+                    modifier = Modifier
+                        .offset(y = infoOffset.dp)
+                        .alpha(infoAlpha),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = recipientName,
+                        style = MaterialTheme.typography.headlineSmall.copy(
+                            fontWeight = FontWeight.SemiBold
+                        ),
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Text(
+                        text = "+91 8050530XXX",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = TextSecondary
+                    )
+                }
             }
+
+            Spacer(modifier = Modifier.height(32.dp))
 
             Box(
                 modifier = Modifier
@@ -132,50 +196,95 @@ fun SendMoneyScreen(
                 contentAlignment = Alignment.BottomCenter
             ) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(OffWhite)
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(
-                        text = "$${amount}",
-                        style = MaterialTheme.typography.displaySmall,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        textAlign = TextAlign.Center,
+                    AnimatedAmount(
+                        amount = amount,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 16.dp, bottom = 10.dp)
+                            .padding(vertical = 24.dp)
                     )
 
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(1.dp)
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .background(MaterialTheme.colorScheme.outlineVariant)
                     )
 
-                    SendAmountKeypad(
-                        onKeyClick = { key ->
-                            amount = amount.applyKey(key)
-                        }
-                    )
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                    PrimaryButton(
-                        text = "Send",
-                        onClick = {
-                            val amountValue = if (amount == "0") 0.0 else amount.toDouble() / 100
-                            onSendClick(amountValue)
-                        },
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-                    )
+                    Box(
+                        modifier = Modifier
+                            .offset(y = keypadOffset.dp)
+                            .alpha(keypadAlpha)
+                    ) {
+                        SendAmountKeypad(
+                            onKeyClick = { key ->
+                                amount = amount.applyKey(key)
+                            },
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Box(
+                        modifier = Modifier
+                            .scale(sendButtonScale)
+                            .alpha(sendButtonAlpha)
+                    ) {
+                        PrimaryButton(
+                            text = "Send Money",
+                            onClick = {
+                                val amountValue = if (amount == "0") 0.0 else amount.toDouble() / 100
+                                onSendClick(amountValue)
+                            },
+                            modifier = Modifier.padding(horizontal = 24.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
             }
         }
     }
 }
 
+@Composable
+private fun AnimatedAmount(
+    amount: String,
+    modifier: Modifier = Modifier
+) {
+    AnimatedContent(
+        targetState = amount,
+        transitionSpec = {
+            val direction = if (targetState.length > initialState.length || (targetState.toDoubleOrNull()
+                    ?: 0.0) > (initialState.toDoubleOrNull() ?: 0.0)
+            ) {
+                slideInVertically { -it } + fadeIn(tween(150)) togetherWith
+                slideOutVertically { it } + fadeOut(tween(150))
+            } else {
+                slideInVertically { it } + fadeIn(tween(150)) togetherWith
+                slideOutVertically { -it } + fadeOut(tween(150))
+            }
+            direction
+        },
+        label = "amountAnimation",
+        modifier = modifier
+    ) { targetAmount ->
+        Text(
+            text = "$${targetAmount}",
+            style = MaterialTheme.typography.displayMedium.copy(
+                fontWeight = FontWeight.Bold
+            ),
+            color = MaterialTheme.colorScheme.onBackground,
+            textAlign = TextAlign.Center
+        )
+    }
+}
 
 fun String.applyKey(key: String): String = when (key) {
-
     "⌫" -> if (length > 1) dropLast(1) else "0"
 
     "." -> {
