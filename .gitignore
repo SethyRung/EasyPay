@@ -8,3 +8,8 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+.github
+AGENTS.md
+.claude
+CLAUDE.md
