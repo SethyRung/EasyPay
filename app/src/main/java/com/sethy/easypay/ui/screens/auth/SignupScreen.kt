@@ -11,6 +11,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -25,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -35,6 +37,9 @@ import com.sethy.easypay.data.model.User
 import com.sethy.easypay.ui.components.AppTextField
 import com.sethy.easypay.ui.components.PrimaryButton
 import com.sethy.easypay.ui.viewmodel.AuthViewModel
+import com.sethy.easypay.ui.theme.Success
+import com.sethy.easypay.ui.theme.TextSecondary
+import com.sethy.easypay.util.ValidationUtils
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,6 +54,7 @@ fun SignupScreen(
     var currentStep by remember { mutableIntStateOf(0) }
     var obscurePassword by remember { mutableStateOf(true) }
     var acceptTerms by remember { mutableStateOf(false) }
+    var attemptedNext by remember { mutableStateOf(false) }
 
     val animProgress = remember { Animatable(0f) }
 
@@ -69,6 +75,7 @@ fun SignupScreen(
     fun handleBack() {
         if (currentStep > 0) {
             currentStep--
+            attemptedNext = false
         } else {
             onBackClick()
         }
@@ -76,12 +83,20 @@ fun SignupScreen(
 
     fun handleNext() {
         if (currentStep < 2) {
-            currentStep++
+            attemptedNext = true
+            if (viewModel.validateSignupStep(currentStep)) {
+                currentStep++
+                attemptedNext = false
+            }
         } else {
             if (!acceptTerms) return
             viewModel.signup(onSuccess = onSignupSuccess)
         }
     }
+
+    val isStepValid = if (attemptedNext) {
+        viewModel.isSignupStepValid(currentStep)
+    } else true
 
     Scaffold(
         topBar = {
@@ -113,7 +128,7 @@ fun SignupScreen(
                     PrimaryButton(
                         text = if (currentStep == 2) "Create Account" else "Continue",
                         onClick = { handleNext() },
-                        enabled = !signupState.isLoading,
+                        enabled = !signupState.isLoading && (currentStep != 2 || acceptTerms),
                         modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)
                     )
                 }
@@ -231,8 +246,8 @@ private fun AnimatedStepCircle(
     Box(
         modifier = Modifier
             .size(32.dp)
-            .scale(scale)
-            .background(backgroundColor, CircleShape),
+            .background(backgroundColor, CircleShape)
+            .scale(scale),
         contentAlignment = Alignment.Center
     ) {
         if (isCompleted) {
@@ -334,6 +349,8 @@ private fun StepOne(
             placeholder = "John Doe",
             isError = signupState.nameError != null,
             errorMessage = signupState.nameError,
+            imeAction = ImeAction.Next,
+            onImeAction = { viewModel.touchSignupName() },
             leadingIcon = {
                 Icon(
                     imageVector = Lucide.User,
@@ -353,6 +370,8 @@ private fun StepOne(
             isError = signupState.emailError != null,
             errorMessage = signupState.emailError,
             keyboardType = KeyboardType.Email,
+            imeAction = ImeAction.Done,
+            onImeAction = { viewModel.touchSignupEmail() },
             leadingIcon = {
                 Icon(
                     imageVector = Lucide.Mail,
@@ -422,6 +441,8 @@ private fun StepTwo(
             isError = signupState.phoneError != null,
             errorMessage = signupState.phoneError,
             keyboardType = KeyboardType.Phone,
+            imeAction = ImeAction.Next,
+            onImeAction = { viewModel.touchSignupPhone() },
             leadingIcon = {
                 Icon(
                     imageVector = Lucide.Phone,
@@ -441,6 +462,8 @@ private fun StepTwo(
             isError = signupState.passwordError != null,
             errorMessage = signupState.passwordError,
             visualTransformation = if (obscurePassword) PasswordVisualTransformation() else VisualTransformation.None,
+            imeAction = ImeAction.Next,
+            onImeAction = { viewModel.touchSignupPassword() },
             leadingIcon = {
                 Icon(
                     imageVector = Lucide.Lock,
@@ -459,6 +482,14 @@ private fun StepTwo(
             }
         )
 
+        if (signupState.password.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(12.dp))
+            PasswordStrengthBar(
+                strength = signupState.passwordStrength,
+                requirements = signupState.passwordRequirements
+            )
+        }
+
         Spacer(modifier = Modifier.height(16.dp))
 
         AppTextField(
@@ -469,6 +500,8 @@ private fun StepTwo(
             isError = signupState.confirmPasswordError != null,
             errorMessage = signupState.confirmPasswordError,
             visualTransformation = if (obscureConfirmPassword) PasswordVisualTransformation() else VisualTransformation.None,
+            imeAction = ImeAction.Done,
+            onImeAction = { viewModel.touchSignupConfirmPassword() },
             leadingIcon = {
                 Icon(
                     imageVector = Lucide.Lock,
@@ -485,6 +518,110 @@ private fun StepTwo(
                     )
                 }
             }
+        )
+    }
+}
+
+@Composable
+private fun PasswordStrengthBar(
+    strength: ValidationUtils.PasswordStrength,
+    requirements: ValidationUtils.PasswordRequirements
+) {
+    val (trackColor, strengthLabel) = when (strength) {
+        ValidationUtils.PasswordStrength.WEAK -> Color(0xFFFF6B6B) to "Weak"
+        ValidationUtils.PasswordStrength.MEDIUM -> Color(0xFFFFA502) to "Medium"
+        ValidationUtils.PasswordStrength.STRONG -> Success to "Strong"
+    }
+
+    val progress = when (strength) {
+        ValidationUtils.PasswordStrength.WEAK -> 0.33f
+        ValidationUtils.PasswordStrength.MEDIUM -> 0.66f
+        ValidationUtils.PasswordStrength.STRONG -> 1f
+    }
+
+    val animatedProgress by animateFloatAsState(
+        targetValue = progress,
+        animationSpec = tween(300, easing = FastOutSlowInEasing),
+        label = "strengthProgress"
+    )
+
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(4.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth(animatedProgress)
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(trackColor)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Text(
+                text = strengthLabel,
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontWeight = FontWeight.SemiBold
+                ),
+                color = trackColor
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        PasswordRequirementItem(
+            label = "At least 8 characters",
+            met = requirements.minLength
+        )
+        PasswordRequirementItem(
+            label = "One uppercase letter",
+            met = requirements.hasUppercase
+        )
+        PasswordRequirementItem(
+            label = "One lowercase letter",
+            met = requirements.hasLowercase
+        )
+        PasswordRequirementItem(
+            label = "One number",
+            met = requirements.hasNumber
+        )
+    }
+}
+
+@Composable
+private fun PasswordRequirementItem(
+    label: String,
+    met: Boolean
+) {
+    val color = if (met) Success else TextSecondary
+    val icon = if (met) Lucide.Check else Lucide.Circle
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(vertical = 2.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = color,
+            modifier = Modifier.size(14.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = color
         )
     }
 }
