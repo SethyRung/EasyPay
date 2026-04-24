@@ -43,9 +43,17 @@ fun HomeScreen(
     user: User,
     transactions: List<Transaction>,
     onSendMoneyClick: () -> Unit,
+    onProfileClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var selectedTab by remember { mutableStateOf(BottomNavItem.HOME) }
+
+    LaunchedEffect(selectedTab) {
+        if (selectedTab == BottomNavItem.PROFILE) {
+            onProfileClick()
+            selectedTab = BottomNavItem.HOME
+        }
+    }
 
     val entranceProgress = remember { Animatable(0f) }
 

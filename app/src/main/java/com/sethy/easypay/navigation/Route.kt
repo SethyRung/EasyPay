@@ -18,4 +18,6 @@ sealed class Route(val route: String) {
         fun create(recipientName: String, amount: Double) =
             "transferSuccess?recipientName=$recipientName&amount=$amount"
     }
+
+    object Profile : Route("profile")
 }

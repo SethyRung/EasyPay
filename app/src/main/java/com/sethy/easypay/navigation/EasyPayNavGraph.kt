@@ -32,6 +32,7 @@ import com.sethy.easypay.data.model.User
 import com.sethy.easypay.data.repository.AuthRepository
 import com.sethy.easypay.ui.screens.HomeScreen
 import com.sethy.easypay.ui.screens.OnboardingScreen
+import com.sethy.easypay.ui.screens.ProfileScreen
 import com.sethy.easypay.ui.screens.SendMoneyScreen
 import com.sethy.easypay.ui.screens.TransferSuccessScreen
 import com.sethy.easypay.ui.screens.auth.LoginScreen
@@ -264,6 +265,9 @@ fun EasyPayNavGraph() {
                 onSendMoneyClick = {
                     navController.navigate(Route.SendMoney.create())
                 },
+                onProfileClick = {
+                    navController.navigate(Route.Profile.route)
+                },
                 modifier = Modifier.fillMaxSize()
             )
         }
@@ -370,6 +374,61 @@ fun EasyPayNavGraph() {
                 onTransferMore = {
                     navController.navigate(Route.SendMoney.create()) {
                         popUpTo(Route.Home.route)
+                    }
+                },
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+
+        composable(
+            route = Route.Profile.route,
+            enterTransition = {
+                slideIntoContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioNoBouncy,
+                        stiffness = Spring.StiffnessMediumLow
+                    )
+                ) + fadeIn(tween(350))
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioNoBouncy,
+                        stiffness = Spring.StiffnessMediumLow
+                    )
+                ) + fadeOut(tween(300))
+            },
+            popEnterTransition = {
+                slideIntoContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioNoBouncy,
+                        stiffness = Spring.StiffnessMediumLow
+                    )
+                ) + fadeIn(tween(300))
+            },
+            popExitTransition = {
+                slideOutOfContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioNoBouncy,
+                        stiffness = Spring.StiffnessMediumLow
+                    )
+                ) + fadeOut(tween(300))
+            }
+        ) {
+            ProfileScreen(
+                user = user!!,
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onLogoutClick = {
+                    authViewModel.logout {
+                        navController.navigate(Route.Onboarding.route) {
+                            popUpTo(Route.Onboarding.route) { inclusive = true }
+                        }
                     }
                 },
                 modifier = Modifier.fillMaxSize()

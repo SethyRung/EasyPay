@@ -257,6 +257,15 @@ class AuthViewModel(
         }
     }
 
+    fun logout(onLoggedOut: () -> Unit) {
+        viewModelScope.launch {
+            authRepository.logout()
+            _loginState.value = LoginUiState()
+            _signupState.value = SignupUiState()
+            onLoggedOut()
+        }
+    }
+
     fun checkAuthState(
         onAuthenticated: (User) -> Unit,
         onUnauthenticated: () -> Unit
