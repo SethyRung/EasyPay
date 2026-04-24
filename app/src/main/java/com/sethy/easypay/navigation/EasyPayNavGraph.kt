@@ -24,6 +24,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.sethy.easypay.data.MockDataLoader
+import com.sethy.easypay.data.api.ApiProvider
 import com.sethy.easypay.data.local.AuthTokenManager
 import com.sethy.easypay.data.model.Transaction
 import com.sethy.easypay.data.model.TransactionType
@@ -54,7 +55,8 @@ fun EasyPayNavGraph() {
 
     val authViewModel = remember {
         val tokenManager = AuthTokenManager(context)
-        val authRepository = AuthRepository(tokenManager)
+        val apiProvider = ApiProvider(tokenManager)
+        val authRepository = AuthRepository(apiProvider, tokenManager)
         AuthViewModel(authRepository)
     }
 

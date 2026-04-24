@@ -1,6 +1,7 @@
 package com.sethy.easypay.data.api
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import com.sethy.easypay.data.local.AuthTokenManager
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
@@ -9,8 +10,9 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import java.util.concurrent.TimeUnit
 
-object ApiProvider {
-    private const val BASE_URL = "http://10.0.2.2:8080/api/"
+class ApiProvider(
+    private val tokenManager: AuthTokenManager
+) {
 
     private val json = Json {
         ignoreUnknownKeys = true
@@ -21,19 +23,29 @@ object ApiProvider {
         level = HttpLoggingInterceptor.Level.BODY
     }
 
-    private val okHttpClient = OkHttpClient.Builder()
-        .addInterceptor(loggingInterceptor)
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
-        .build()
+    private val authInterceptor = AuthInterceptor(tokenManager)
+
+    private val okHttpClient: OkHttpClient by lazy {
+        OkHttpClient.Builder()
+            .addInterceptor(authInterceptor)
+            .addInterceptor(loggingInterceptor)
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .build()
+    }
 
     @OptIn(ExperimentalSerializationApi::class)
-    private val retrofit = Retrofit.Builder()
-        .baseUrl(BASE_URL)
-        .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
-        .client(okHttpClient)
-        .build()
+    private val retrofit: Retrofit by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+            .client(okHttpClient)
+            .build()
+    }
 
-    val authApi: AuthApi = retrofit.create(AuthApi::class.java)
-    val walletApi: WalletApi = retrofit.create(WalletApi::class.java)
+    fun <T> createService(serviceClass: Class<T>): T = retrofit.create(serviceClass)
+
+    companion object {
+        const val BASE_URL = "http://10.0.2.2:8080/api/"
+    }
 }
