@@ -419,20 +419,28 @@ fun EasyPayNavGraph() {
                 ) + fadeOut(tween(300))
             }
         ) {
-            ProfileScreen(
-                user = user!!,
-                onBackClick = {
-                    navController.popBackStack()
-                },
-                onLogoutClick = {
-                    authViewModel.logout {
-                        navController.navigate(Route.Onboarding.route) {
-                            popUpTo(Route.Onboarding.route) { inclusive = true }
+            // Guard against null user during logout transition
+            val u = user
+            if (u != null) {
+                ProfileScreen(
+                    user = u,
+                    onBackClick = {
+                        navController.popBackStack()
+                    },
+                    onLogoutClick = {
+                        authViewModel.logout {
+                            // Navigate first — avoids recomposition crash
+                            // while Profile is still visible during transition
+                            navController.navigate(Route.Onboarding.route) {
+                                popUpTo(Route.Home.route) { inclusive = true }
+                            }
+                            user = null
+                            transactions = emptyList()
                         }
-                    }
-                },
-                modifier = Modifier.fillMaxSize()
-            )
+                    },
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
         }
     }
 }

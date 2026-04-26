@@ -23,7 +23,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -42,12 +41,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.composables.icons.lucide.ArrowLeft
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Mail
 import com.composables.icons.lucide.Phone
 import com.composables.icons.lucide.User
 import com.sethy.easypay.data.model.User
+import com.sethy.easypay.ui.components.AppTopBar
 import com.sethy.easypay.ui.theme.Error
 import com.sethy.easypay.ui.theme.ErrorSoft
 import com.sethy.easypay.ui.theme.SurfaceSubtle
@@ -80,29 +79,11 @@ fun ProfileScreen(
 
     Scaffold(
         topBar = {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = onBackClick) {
-                    Icon(
-                        imageVector = Lucide.ArrowLeft,
-                        contentDescription = "Back",
-                        tint = TextPrimary,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-                Text(
-                    text = "Profile",
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = TextPrimary,
-                    modifier = Modifier.padding(start = 4.dp)
-                )
-            }
+            AppTopBar(
+                title = "Profile",
+                showBackButton = true,
+                onBackClick = onBackClick
+            )
         },
         containerColor = Color.White
     ) { paddingValues ->
