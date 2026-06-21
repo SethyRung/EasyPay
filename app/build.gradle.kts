@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.google.ksp)
+    alias(libs.plugins.google.hilt)
     kotlin("plugin.serialization") version "2.3.20"
 }
 
@@ -21,8 +23,12 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField("Boolean", "USE_MOCK_DATA", "true")
+        }
         release {
             isMinifyEnabled = false
+            buildConfigField("Boolean", "USE_MOCK_DATA", "false")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -35,12 +41,14 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
@@ -54,6 +62,10 @@ dependencies {
     implementation(libs.coil.svg)
     implementation(libs.kotlinx.serialization.json)
 
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    implementation(libs.androidx.hilt.navigation.compose)
+
     implementation(libs.retrofit.core)
     implementation(libs.retrofit.converter.kotlinx.serialization)
     implementation(libs.okhttp.core)
@@ -63,6 +75,8 @@ dependencies {
     implementation(libs.androidx.security.crypto)
 
     testImplementation(libs.junit)
+    testImplementation(libs.turbine)
+    testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
