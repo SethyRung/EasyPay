@@ -1,5 +1,6 @@
 package com.sethy.easypay.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,16 +12,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.ArrowDown
@@ -28,11 +29,16 @@ import com.composables.icons.lucide.ArrowUp
 import com.composables.icons.lucide.Lucide
 import com.sethy.easypay.data.model.Transaction
 import com.sethy.easypay.data.model.TransactionType
-import com.sethy.easypay.ui.theme.Success
-import com.sethy.easypay.ui.theme.SuccessSoft
-import com.sethy.easypay.ui.theme.Error
-import com.sethy.easypay.ui.theme.ErrorSoft
-import com.sethy.easypay.ui.theme.TextSecondary
+import com.sethy.easypay.design.Body
+import com.sethy.easypay.design.Canvas
+import com.sethy.easypay.design.EasyPaySpacing
+import com.sethy.easypay.design.EasyPayTypography
+import com.sethy.easypay.design.Error
+import com.sethy.easypay.design.Hairline
+import com.sethy.easypay.design.Ink
+import com.sethy.easypay.design.Success
+import com.sethy.easypay.design.SurfaceCard
+import com.sethy.easypay.design.SurfaceSoft
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -40,34 +46,34 @@ import java.util.Locale
 @Composable
 fun TransactionItem(
     transaction: Transaction,
+    onClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+    val dateFormat = remember { SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()) }
     val dateStr = dateFormat.format(Date(transaction.timestamp))
 
     val isReceived = transaction.type == TransactionType.RECEIVED
-    val iconBg = if (isReceived) SuccessSoft else ErrorSoft
+    val iconBg = if (isReceived) Success.copy(alpha = 0.12f) else Error.copy(alpha = 0.12f)
     val iconTint = if (isReceived) Success else Error
     val amountPrefix = if (isReceived) "+" else "-"
-    val amountColor = if (isReceived) Success else MaterialTheme.colorScheme.onBackground
+    val amountColor = if (isReceived) Success else Ink
 
-    Surface(
+    Card(
+        onClick = onClick,
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        color = Color.White,
-        shadowElevation = 1.dp,
-        tonalElevation = 0.dp
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(containerColor = Canvas),
+        border = BorderStroke(1.dp, Hairline),
+        elevation = CardDefaults.cardElevation(0.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(EasyPaySpacing.lg),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     modifier = Modifier
                         .size(44.dp)
@@ -83,29 +89,25 @@ fun TransactionItem(
                     )
                 }
 
-                Spacer(modifier = Modifier.width(14.dp))
+                Spacer(modifier = Modifier.width(EasyPaySpacing.md))
 
                 Column {
                     Text(
                         text = transaction.recipientName,
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            fontWeight = FontWeight.SemiBold
-                        ),
-                        color = MaterialTheme.colorScheme.onBackground
+                        style = EasyPayTypography.bodyMD.copy(fontWeight = FontWeight.SemiBold),
+                        color = Ink
                     )
                     Text(
                         text = dateStr,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = TextSecondary
+                        style = EasyPayTypography.bodySM,
+                        color = Body
                     )
                 }
             }
 
             Text(
-                text = "$amountPrefix$${String.format("%.2f", transaction.amount)}",
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.SemiBold
-                ),
+                text = "$amountPrefix$${String.format(Locale.getDefault(), "%.2f", transaction.amount)}",
+                style = EasyPayTypography.bodyMD.copy(fontWeight = FontWeight.SemiBold),
                 color = amountColor
             )
         }
