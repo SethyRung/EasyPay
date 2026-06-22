@@ -27,3 +27,9 @@ data class TransactionsListResponse(
     val transactions: List<TransactionResponse>,
     val total: Int
 )
+
+@Serializable
+data class SendMoneyRequest(
+    val recipient: String,
+    val amountMinor: Long
+)

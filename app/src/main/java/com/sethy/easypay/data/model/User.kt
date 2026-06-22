@@ -8,6 +8,6 @@ data class User(
     val name: String,
     val email: String,
     val phone: String? = null,
-    val balance: Double,
+    val balance: Double = 0.0,
     val avatarUrl: String? = null
 )
