@@ -34,7 +34,10 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.sethy.easypay.ui.screens.auth.LoginScreen
 import com.sethy.easypay.ui.screens.auth.SignupScreen
+import com.sethy.easypay.ui.screens.home.HomeScreen
 import com.sethy.easypay.ui.screens.onboarding.OnboardingScreen
+import com.sethy.easypay.ui.screens.send.SendMoneyScreen
+import com.sethy.easypay.ui.screens.send.TransferSuccessScreen
 
 private const val SLIDE_DURATION = 250
 private const val SCALE_DURATION = 400
@@ -109,7 +112,15 @@ fun EasyPayNavGraph(
             popEnterTransition = { scaleFadeEnter() },
             popExitTransition = { fadeOut(tween(SLIDE_DURATION)) }
         ) {
-            HomeStub(navController)
+            HomeScreen(
+                onNavigateToSendMoney = { navController.navigate(Route.SendMoney.create()) },
+                onNavigateToTransactionDetail = { id ->
+                    navController.navigate(Route.TransactionDetail.create(id))
+                },
+                onNavigateToNotifications = { navController.navigate(Route.Notifications.route) },
+                onNavigateToProfile = { navController.navigate(Route.Profile.route) },
+                onNavigateToCalendar = { navController.navigate(Route.Calendar.route) }
+            )
         }
 
         composable(
@@ -157,7 +168,13 @@ fun EasyPayNavGraph(
             popExitTransition = { slideDownExit() }
         ) { backStackEntry ->
             val recipientName = backStackEntry.arguments?.getString("recipientName") ?: "Nayantara V"
-            SendMoneyStub(navController, recipientName)
+            SendMoneyScreen(
+                recipientName = recipientName,
+                onNavigateToTransferSuccess = { recipient, amount ->
+                    navController.navigate(Route.TransferSuccess.create(recipient, amount))
+                },
+                onBackClick = { navController.popBackStack() }
+            )
         }
 
         composable(
@@ -173,7 +190,20 @@ fun EasyPayNavGraph(
         ) { backStackEntry ->
             val recipientName = backStackEntry.arguments?.getString("recipientName") ?: ""
             val amount = backStackEntry.arguments?.getFloat("amount")?.toDouble() ?: 0.0
-            TransferSuccessStub(navController, recipientName, amount)
+            TransferSuccessScreen(
+                recipientName = recipientName,
+                amount = amount,
+                onDone = {
+                    navController.navigate(Route.Home.route) {
+                        popUpTo(Route.Home.route) { inclusive = true }
+                    }
+                },
+                onTransferMore = {
+                    navController.navigate(Route.SendMoney.create()) {
+                        popUpTo(Route.Home.route)
+                    }
+                }
+            )
         }
 
         composable(
@@ -276,34 +306,6 @@ private fun AnimatedContentTransitionScope<NavBackStackEntry>.scaleFadeExit() =
 // ── Stub screens ──────────────────────────────────────────────────────────────
 
 @Composable
-private fun HomeStub(navController: NavController) {
-    StubScaffold(title = "Home") {
-        Button(onClick = { navController.navigate(Route.SendMoney.create()) }) {
-            Text("Send money")
-        }
-        Button(onClick = { navController.navigate(Route.Notifications.route) }) {
-            Text("Notifications")
-        }
-        Button(onClick = { navController.navigate(Route.Profile.route) }) {
-            Text("Profile")
-        }
-        Button(onClick = { navController.navigate(Route.Calendar.route) }) {
-            Text("Calendar")
-        }
-        Button(onClick = { navController.navigate(Route.TransactionDetail.create("1")) }) {
-            Text("Transaction detail")
-        }
-        TextButton(onClick = {
-            navController.navigate(Route.Onboarding.route) {
-                popUpTo(Route.Home.route) { inclusive = true }
-            }
-        }) {
-            Text("Log out")
-        }
-    }
-}
-
-@Composable
 private fun CalendarStub(navController: NavController) {
     StubScaffold(title = "Calendar", showBack = true, navController = navController) {
         Text("Coming soon", style = MaterialTheme.typography.titleMedium)
@@ -321,37 +323,6 @@ private fun NotificationsStub(navController: NavController) {
 private fun ProfileStub(navController: NavController) {
     StubScaffold(title = "Profile", showBack = true, navController = navController) {
         Text("Profile", style = MaterialTheme.typography.titleMedium)
-    }
-}
-
-@Composable
-private fun SendMoneyStub(navController: NavController, recipientName: String) {
-    StubScaffold(title = "Send Money", showBack = true, navController = navController) {
-        Text("Sending to $recipientName", style = MaterialTheme.typography.titleMedium)
-        Button(onClick = { navController.navigate(Route.TransferSuccess.create(recipientName, 50.0)) }) {
-            Text("Send \$50.00")
-        }
-    }
-}
-
-@Composable
-private fun TransferSuccessStub(
-    navController: NavController,
-    recipientName: String,
-    amount: Double
-) {
-    StubScaffold(title = "Transfer Successful") {
-        Text("Sent ${"%.2f".format(amount)} to $recipientName", style = MaterialTheme.typography.titleMedium)
-        Button(onClick = {
-            navController.navigate(Route.Home.route) {
-                popUpTo(Route.Home.route) { inclusive = true }
-            }
-        }) {
-            Text("Done")
-        }
-        TextButton(onClick = { navController.navigate(Route.SendMoney.create()) }) {
-            Text("Transfer more")
-        }
     }
 }
 
