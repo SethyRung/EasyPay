@@ -32,6 +32,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.sethy.easypay.ui.screens.auth.LoginScreen
+import com.sethy.easypay.ui.screens.auth.SignupScreen
+import com.sethy.easypay.ui.screens.onboarding.OnboardingScreen
 
 private const val SLIDE_DURATION = 250
 private const val SCALE_DURATION = 400
@@ -58,7 +61,10 @@ fun EasyPayNavGraph(
             popEnterTransition = { scaleFadeEnter() },
             popExitTransition = { scaleFadeExit() }
         ) {
-            OnboardingStub(navController)
+            OnboardingScreen(
+                onGetStartedClick = { navController.navigate(Route.Signup.route) },
+                onLoginClick = { navController.navigate(Route.Login.route) }
+            )
         }
 
         composable(
@@ -68,7 +74,15 @@ fun EasyPayNavGraph(
             popEnterTransition = { slideRightEnter() },
             popExitTransition = { slideRightExit() }
         ) {
-            LoginStub(navController)
+            LoginScreen(
+                onLoginSuccess = {
+                    navController.navigate(Route.Home.route) {
+                        popUpTo(Route.Onboarding.route) { inclusive = true }
+                    }
+                },
+                onSignupClick = { navController.navigate(Route.Signup.route) },
+                onBackClick = { navController.popBackStack() }
+            )
         }
 
         composable(
@@ -78,7 +92,14 @@ fun EasyPayNavGraph(
             popEnterTransition = { slideRightEnter() },
             popExitTransition = { slideRightExit() }
         ) {
-            SignupStub(navController)
+            SignupScreen(
+                onSignupSuccess = {
+                    navController.navigate(Route.Home.route) {
+                        popUpTo(Route.Onboarding.route) { inclusive = true }
+                    }
+                },
+                onBackClick = { navController.popBackStack() }
+            )
         }
 
         composable(
@@ -253,47 +274,6 @@ private fun AnimatedContentTransitionScope<NavBackStackEntry>.scaleFadeExit() =
     ) + fadeOut(tween(300))
 
 // ── Stub screens ──────────────────────────────────────────────────────────────
-
-@Composable
-private fun OnboardingStub(navController: NavController) {
-    StubScaffold(title = "Onboarding") {
-        Button(onClick = { navController.navigate(Route.Signup.route) }) {
-            Text("Get started")
-        }
-        TextButton(onClick = { navController.navigate(Route.Login.route) }) {
-            Text("I already have an account")
-        }
-    }
-}
-
-@Composable
-private fun LoginStub(navController: NavController) {
-    StubScaffold(title = "Login", showBack = true, navController = navController) {
-        Button(onClick = {
-            navController.navigate(Route.Home.route) {
-                popUpTo(Route.Onboarding.route) { inclusive = true }
-            }
-        }) {
-            Text("Sign in")
-        }
-        TextButton(onClick = { navController.navigate(Route.Signup.route) }) {
-            Text("Don't have an account? Sign up")
-        }
-    }
-}
-
-@Composable
-private fun SignupStub(navController: NavController) {
-    StubScaffold(title = "Create Account", showBack = true, navController = navController) {
-        Button(onClick = {
-            navController.navigate(Route.Home.route) {
-                popUpTo(Route.Onboarding.route) { inclusive = true }
-            }
-        }) {
-            Text("Create account")
-        }
-    }
-}
 
 @Composable
 private fun HomeStub(navController: NavController) {
