@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.sethy.easypay.design.EasyPayTheme
-import com.sethy.easypay.navigation.EasyPayNavGraph
+import com.sethy.easypay.navigation.AuthGate
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -15,7 +15,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             EasyPayTheme {
-                EasyPayNavGraph()
+                AuthGate()
             }
         }
     }
