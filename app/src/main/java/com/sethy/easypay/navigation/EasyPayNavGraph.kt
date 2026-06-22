@@ -36,8 +36,10 @@ import com.sethy.easypay.ui.screens.auth.LoginScreen
 import com.sethy.easypay.ui.screens.auth.SignupScreen
 import com.sethy.easypay.ui.screens.home.HomeScreen
 import com.sethy.easypay.ui.screens.onboarding.OnboardingScreen
+import com.sethy.easypay.ui.screens.notifications.NotificationsScreen
 import com.sethy.easypay.ui.screens.send.SendMoneyScreen
 import com.sethy.easypay.ui.screens.send.TransferSuccessScreen
+import com.sethy.easypay.ui.screens.transactions.TransactionDetailScreen
 
 private const val SLIDE_DURATION = 250
 private const val SCALE_DURATION = 400
@@ -140,7 +142,7 @@ fun EasyPayNavGraph(
             popEnterTransition = { slideRightEnter() },
             popExitTransition = { slideRightExit() }
         ) {
-            NotificationsStub(navController)
+            NotificationsScreen(onBackClick = { navController.popBackStack() })
         }
 
         composable(
@@ -213,9 +215,8 @@ fun EasyPayNavGraph(
             exitTransition = { slideLeftExit() },
             popEnterTransition = { slideRightEnter() },
             popExitTransition = { slideRightExit() }
-        ) { backStackEntry ->
-            val id = backStackEntry.arguments?.getString("id") ?: ""
-            TransactionDetailStub(navController, id)
+        ) {
+            TransactionDetailScreen(onBackClick = { navController.popBackStack() })
         }
     }
 }
@@ -313,25 +314,12 @@ private fun CalendarStub(navController: NavController) {
 }
 
 @Composable
-private fun NotificationsStub(navController: NavController) {
-    StubScaffold(title = "Notifications", showBack = true, navController = navController) {
-        Text("Notifications list", style = MaterialTheme.typography.titleMedium)
-    }
-}
-
-@Composable
 private fun ProfileStub(navController: NavController) {
     StubScaffold(title = "Profile", showBack = true, navController = navController) {
         Text("Profile", style = MaterialTheme.typography.titleMedium)
     }
 }
 
-@Composable
-private fun TransactionDetailStub(navController: NavController, id: String) {
-    StubScaffold(title = "Transaction", showBack = true, navController = navController) {
-        Text("Transaction id: $id", style = MaterialTheme.typography.titleMedium)
-    }
-}
 
 @Composable
 private fun StubScaffold(
