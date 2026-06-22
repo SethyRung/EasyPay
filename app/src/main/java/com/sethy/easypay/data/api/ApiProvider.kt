@@ -1,6 +1,7 @@
 package com.sethy.easypay.data.api
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import com.sethy.easypay.data.dto.RefreshTokenRequest
 import com.sethy.easypay.data.local.AuthTokenManager
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
@@ -10,6 +11,11 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import java.util.concurrent.TimeUnit
 
+/**
+ * Legacy service factory kept for compatibility.
+ * New code should prefer Hilt-injected API interfaces from [NetworkModule].
+ */
+@OptIn(ExperimentalSerializationApi::class)
 class ApiProvider(
     private val tokenManager: AuthTokenManager
 ) {
@@ -23,7 +29,23 @@ class ApiProvider(
         level = HttpLoggingInterceptor.Level.BODY
     }
 
-    private val authInterceptor = AuthInterceptor(tokenManager)
+    private val authApi: AuthApi by lazy {
+        val client = OkHttpClient.Builder()
+            .addInterceptor(loggingInterceptor)
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .build()
+
+        val retrofit = Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+            .client(client)
+            .build()
+
+        retrofit.create(AuthApi::class.java)
+    }
+
+    private val authInterceptor = AuthInterceptor(tokenManager, authApi)
 
     private val okHttpClient: OkHttpClient by lazy {
         OkHttpClient.Builder()

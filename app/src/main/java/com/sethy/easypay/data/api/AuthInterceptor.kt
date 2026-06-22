@@ -1,24 +1,21 @@
 package com.sethy.easypay.data.api
 
-import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.sethy.easypay.data.dto.RefreshTokenRequest
 import com.sethy.easypay.data.local.AuthTokenManager
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.json.Json
 import okhttp3.Interceptor
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
-import retrofit2.Retrofit
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
+import javax.inject.Singleton
 
-@OptIn(ExperimentalSerializationApi::class)
-class AuthInterceptor(
-    private val tokenManager: AuthTokenManager
+@Singleton
+class AuthInterceptor @Inject constructor(
+    private val tokenManager: AuthTokenManager,
+    private val authApi: AuthApi
 ) : Interceptor {
 
     // Paths that don't need an auth token
@@ -116,22 +113,6 @@ class AuthInterceptor(
         return try {
             val refreshToken = tokenManager.getRefreshToken() ?: return null
 
-            // Use a temporary Retrofit instance without the auth interceptor
-            // to avoid recursive refresh loops
-            val tempClient = OkHttpClient.Builder().build()
-            val json = Json {
-                ignoreUnknownKeys = true
-                coerceInputValues = true
-            }
-            val tempRetrofit = Retrofit.Builder()
-                .baseUrl(ApiProvider.BASE_URL)
-                .addConverterFactory(
-                    json.asConverterFactory("application/json".toMediaType())
-                )
-                .client(tempClient)
-                .build()
-
-            val authApi = tempRetrofit.create(AuthApi::class.java)
             val response = authApi.refreshToken(RefreshTokenRequest(refreshToken))
 
             if (response.status.code == "SUCCESS") {
