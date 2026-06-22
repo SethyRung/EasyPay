@@ -1,23 +1,26 @@
 package com.sethy.easypay.navigation
 
-/**
- * Navigation routes for the app
- */
 sealed class Route(val route: String) {
-    object Onboarding : Route("onboarding")
-    object Login : Route("login")
-    object Signup : Route("signup")
-    object Home : Route("home")
+    data object Onboarding : Route("onboarding")
+    data object Login : Route("login")
+    data object Signup : Route("signup")
+    data object Home : Route("home")
+    data object Calendar : Route("calendar")
+    data object Notifications : Route("notifications")
+    data object Profile : Route("profile")
 
-    object SendMoney : Route("sendMoney?recipientName={recipientName}") {
+    data object SendMoney : Route("sendMoney?recipientName={recipientName}") {
         fun create(recipientName: String = "Nayantara V") =
             "sendMoney?recipientName=$recipientName"
     }
 
-    object TransferSuccess : Route("transferSuccess?recipientName={recipientName}&amount={amount}") {
+    data object TransferSuccess :
+        Route("transferSuccess?recipientName={recipientName}&amount={amount}") {
         fun create(recipientName: String, amount: Double) =
             "transferSuccess?recipientName=$recipientName&amount=$amount"
     }
 
-    object Profile : Route("profile")
+    data object TransactionDetail : Route("transactionDetail/{id}") {
+        fun create(id: String) = "transactionDetail/$id"
+    }
 }
