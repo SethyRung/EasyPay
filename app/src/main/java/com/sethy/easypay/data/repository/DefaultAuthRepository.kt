@@ -1,0 +1,48 @@
+package com.sethy.easypay.data.repository
+
+import com.sethy.easypay.data.local.AuthTokenManager
+import com.sethy.easypay.data.model.User
+import com.sethy.easypay.data.source.AuthDataSource
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class DefaultAuthRepository @Inject constructor(
+    private val authDataSource: AuthDataSource,
+    private val tokenManager: AuthTokenManager
+) : BaseRepository(), AuthRepository {
+
+    override suspend fun login(email: String, password: String): Result<User> {
+        return authDataSource.login(email, password)
+            .onSuccess { result -> saveTokens(result) }
+            .map { it.user }
+    }
+
+    override suspend fun register(
+        name: String,
+        email: String,
+        phone: String,
+        password: String
+    ): Result<User> {
+        return authDataSource.register(name, email, phone, password)
+            .onSuccess { result -> saveTokens(result) }
+            .map { it.user }
+    }
+
+    override suspend fun logout() {
+        authDataSource.logout()
+        tokenManager.clearTokens()
+    }
+
+    override suspend fun isLoggedIn(): Boolean {
+        return tokenManager.getAccessToken() != null
+    }
+
+    private suspend fun saveTokens(result: com.sethy.easypay.data.source.AuthResult) {
+        tokenManager.saveTokens(result.accessToken, result.refreshToken)
+        tokenManager.setTokenExpiry(
+            System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(15)
+        )
+    }
+}
