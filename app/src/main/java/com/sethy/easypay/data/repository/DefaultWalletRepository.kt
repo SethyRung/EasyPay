@@ -1,6 +1,7 @@
 package com.sethy.easypay.data.repository
 
 import com.sethy.easypay.data.model.Transaction
+import com.sethy.easypay.data.model.User
 import com.sethy.easypay.data.source.WalletDataSource
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -9,6 +10,8 @@ import javax.inject.Singleton
 class DefaultWalletRepository @Inject constructor(
     private val walletDataSource: WalletDataSource
 ) : BaseRepository(), WalletRepository {
+
+    override suspend fun getCurrentUser(): Result<User> = walletDataSource.getUser()
 
     override suspend fun getBalance(): Result<Double> = walletDataSource.getBalance()
 

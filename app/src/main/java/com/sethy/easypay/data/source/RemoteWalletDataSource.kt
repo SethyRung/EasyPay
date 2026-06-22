@@ -8,6 +8,7 @@ import com.sethy.easypay.data.mapper.toNotification
 import com.sethy.easypay.data.mapper.toTransaction
 import com.sethy.easypay.data.model.Notification
 import com.sethy.easypay.data.model.Transaction
+import com.sethy.easypay.data.model.User
 import com.sethy.easypay.data.repository.BaseRepository
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -17,6 +18,10 @@ class RemoteWalletDataSource @Inject constructor(
     private val walletApi: WalletApi,
     private val notificationApi: NotificationApi
 ) : BaseRepository(), WalletDataSource {
+
+    override suspend fun getUser(): Result<User> = Result.failure(
+        NotImplementedError("User profile endpoint is not yet implemented")
+    )
 
     override suspend fun getBalance(): Result<Double> = safeApiCall {
         walletApi.getBalance()

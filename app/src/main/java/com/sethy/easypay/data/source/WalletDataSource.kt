@@ -2,8 +2,10 @@ package com.sethy.easypay.data.source
 
 import com.sethy.easypay.data.model.Notification
 import com.sethy.easypay.data.model.Transaction
+import com.sethy.easypay.data.model.User
 
 interface WalletDataSource {
+    suspend fun getUser(): Result<User>
     suspend fun getBalance(): Result<Double>
     suspend fun getTransactions(limit: Int, offset: Int): Result<List<Transaction>>
     suspend fun getTransaction(id: String): Result<Transaction>

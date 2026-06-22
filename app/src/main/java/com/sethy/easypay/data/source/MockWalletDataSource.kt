@@ -6,6 +6,7 @@ import com.sethy.easypay.data.model.NotificationType
 import com.sethy.easypay.data.model.Transaction
 import com.sethy.easypay.data.model.TransactionStatus
 import com.sethy.easypay.data.model.TransactionType
+import com.sethy.easypay.data.model.User
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.UUID
 import javax.inject.Inject
@@ -16,6 +17,7 @@ class MockWalletDataSource @Inject constructor(
     @param:ApplicationContext private val context: Context
 ) : WalletDataSource {
 
+    private var user: User? = null
     private var balance: Double = 0.0
     private var transactions: List<Transaction> = emptyList()
     private var notifications: List<Notification> = emptyList()
@@ -23,11 +25,18 @@ class MockWalletDataSource @Inject constructor(
 
     private suspend fun ensureLoaded() {
         if (loaded) return
-        val user = MockDataLoader.loadUser(context)
-        balance = user.balance
+        val loadedUser = MockDataLoader.loadUser(context)
+        user = loadedUser
+        balance = loadedUser.balance
         transactions = MockDataLoader.loadTransactions(context)
         notifications = generateNotifications(transactions)
         loaded = true
+    }
+
+    override suspend fun getUser(): Result<User> {
+        ensureLoaded()
+        return user?.let { Result.success(it) }
+            ?: Result.failure(NoSuchElementException("User not found"))
     }
 
     override suspend fun getBalance(): Result<Double> {
