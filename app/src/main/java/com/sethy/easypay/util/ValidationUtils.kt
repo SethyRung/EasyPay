@@ -1,8 +1,12 @@
 package com.sethy.easypay.util
 
-import android.util.Patterns
+import java.util.regex.Pattern
 
 object ValidationUtils {
+
+    private val EMAIL_ADDRESS_PATTERN = Pattern.compile(
+        "[a-zA-Z0-9+._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
+    )
 
     fun validateName(name: String): String? {
         return when {
@@ -17,7 +21,7 @@ object ValidationUtils {
     fun validateEmail(email: String): String? {
         return when {
             email.isBlank() -> "Email is required"
-            !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> "Enter a valid email address"
+            !EMAIL_ADDRESS_PATTERN.matcher(email).matches() -> "Enter a valid email address"
             else -> null
         }
     }
