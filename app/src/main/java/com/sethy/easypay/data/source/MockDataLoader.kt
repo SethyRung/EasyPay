@@ -1,4 +1,4 @@
-package com.sethy.easypay.data
+package com.sethy.easypay.data.source
 
 import android.content.Context
 import com.sethy.easypay.data.model.Transaction
@@ -11,7 +11,7 @@ import kotlinx.serialization.json.Json
  * Centralized loader for mock data from assets folder.
  * All mock JSON files should be placed in app/src/main/assets/data/
  */
-object MockDataLoader {
+internal object MockDataLoader {
     private val json = Json {
         ignoreUnknownKeys = true
         coerceInputValues = true
