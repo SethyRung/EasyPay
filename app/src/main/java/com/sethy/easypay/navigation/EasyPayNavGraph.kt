@@ -25,7 +25,6 @@ import androidx.navigation.navArgument
 import com.sethy.easypay.ui.screens.auth.LoginScreen
 import com.sethy.easypay.ui.screens.auth.SignupScreen
 import com.sethy.easypay.ui.screens.home.HomeScreen
-import com.sethy.easypay.ui.screens.onboarding.OnboardingScreen
 import com.sethy.easypay.ui.screens.calendar.CalendarScreen
 import com.sethy.easypay.ui.screens.notifications.NotificationsScreen
 import com.sethy.easypay.ui.screens.profile.ProfileScreen
@@ -38,7 +37,7 @@ private const val SCALE_DURATION = 400
 
 @Composable
 fun EasyPayNavGraph(
-    startDestination: String = Route.Onboarding.route
+    startDestination: String = Route.Login.route
 ) {
     val navController = rememberNavController()
 
@@ -52,19 +51,6 @@ fun EasyPayNavGraph(
         popExitTransition = { defaultPopExit() }
     ) {
         composable(
-            route = Route.Onboarding.route,
-            enterTransition = { scaleFadeEnter() },
-            exitTransition = { scaleFadeExit() },
-            popEnterTransition = { scaleFadeEnter() },
-            popExitTransition = { scaleFadeExit() }
-        ) {
-            OnboardingScreen(
-                onGetStartedClick = { navController.navigate(Route.Signup.route) },
-                onLoginClick = { navController.navigate(Route.Login.route) }
-            )
-        }
-
-        composable(
             route = Route.Login.route,
             enterTransition = { slideLeftEnter() },
             exitTransition = { slideLeftExit() },
@@ -74,7 +60,7 @@ fun EasyPayNavGraph(
             LoginScreen(
                 onLoginSuccess = {
                     navController.navigate(Route.Home.route) {
-                        popUpTo(Route.Onboarding.route) { inclusive = true }
+                        popUpTo(Route.Login.route) { inclusive = true }
                     }
                 },
                 onSignupClick = { navController.navigate(Route.Signup.route) },
@@ -92,9 +78,10 @@ fun EasyPayNavGraph(
             SignupScreen(
                 onSignupSuccess = {
                     navController.navigate(Route.Home.route) {
-                        popUpTo(Route.Onboarding.route) { inclusive = true }
+                        popUpTo(Route.Login.route) { inclusive = true }
                     }
                 },
+                onLoginClick = { navController.popBackStack() },
                 onBackClick = { navController.popBackStack() }
             )
         }
@@ -147,8 +134,8 @@ fun EasyPayNavGraph(
             popExitTransition = { slideRightExit() }
         ) {
             ProfileScreen(
-                onNavigateToOnboarding = {
-                    navController.navigate(Route.Onboarding.route) {
+                onNavigateToLogin = {
+                    navController.navigate(Route.Login.route) {
                         popUpTo(Route.Home.route) { inclusive = true }
                     }
                 },

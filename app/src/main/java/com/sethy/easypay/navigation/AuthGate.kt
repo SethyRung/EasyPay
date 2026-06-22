@@ -25,7 +25,7 @@ fun AuthGate(
                 CircularProgressIndicator()
             }
         }
-        false -> EasyPayNavGraph(startDestination = Route.Onboarding.route)
+        false -> EasyPayNavGraph(startDestination = Route.Login.route)
         true -> EasyPayNavGraph(startDestination = Route.Home.route)
     }
 }

@@ -78,7 +78,7 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             logoutUseCase()
             _state.value = ProfileUiState()
-            _effect.send(ProfileEffect.NavigateToOnboarding)
+            _effect.send(ProfileEffect.NavigateToLogin)
         }
     }
 }

@@ -86,7 +86,7 @@ class ProfileViewModelTest {
     }
 
     @Test
-    fun ConfirmLogout_emits_NavigateToOnboarding() = runTest {
+    fun ConfirmLogout_emits_NavigateToLogin() = runTest {
         val getCurrentUser: GetCurrentUserUseCase = mock()
         val logoutUseCase: LogoutUseCase = mock()
         whenever(getCurrentUser()).thenReturn(Result.success(testUser))
@@ -100,7 +100,7 @@ class ProfileViewModelTest {
             advanceUntilIdle()
             vm.onEvent(ProfileEvent.ConfirmLogout)
             advanceUntilIdle()
-            assertEquals(ProfileEffect.NavigateToOnboarding, awaitItem())
+            assertEquals(ProfileEffect.NavigateToLogin, awaitItem())
         }
     }
 

@@ -52,7 +52,7 @@ import com.sethy.easypay.ui.viewmodel.ProfileViewModel
 @Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
-    onNavigateToOnboarding: () -> Unit,
+    onNavigateToLogin: () -> Unit,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -62,7 +62,7 @@ fun ProfileScreen(
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
-                ProfileEffect.NavigateToOnboarding -> onNavigateToOnboarding()
+                ProfileEffect.NavigateToLogin -> onNavigateToLogin()
                 ProfileEffect.NavigateBack -> onBackClick()
                 is ProfileEffect.ShowError -> { /* Handled via state.errorMessage */ }
             }
@@ -293,7 +293,7 @@ private fun LogoutDialog(
 private fun ProfileScreenPreview() {
     EasyPayTheme {
         ProfileScreen(
-            onNavigateToOnboarding = {},
+            onNavigateToLogin = {},
             onBackClick = {}
         )
     }
