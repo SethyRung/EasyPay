@@ -1,5 +1,6 @@
 package com.sethy.easypay.ui.screens.auth
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -21,6 +24,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -32,17 +37,20 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.composables.icons.lucide.Eye
 import com.composables.icons.lucide.EyeOff
 import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Phone
+import com.sethy.easypay.R
 import com.sethy.easypay.design.Canvas
 import com.sethy.easypay.design.EasyPaySpacing
 import com.sethy.easypay.design.EasyPayTheme
 import com.sethy.easypay.design.EasyPayTypography
+import com.sethy.easypay.design.Error
 import com.sethy.easypay.design.Ink
 import com.sethy.easypay.design.Muted
-import com.sethy.easypay.design.components.BrandMark
+import com.sethy.easypay.design.Primary
 import com.sethy.easypay.design.components.ButtonPrimary
 import com.sethy.easypay.design.components.ButtonTextLink
+import com.sethy.easypay.design.components.EasyPayWordmark
 import com.sethy.easypay.design.components.TextInput
-import com.sethy.easypay.design.components.TopNav
 import com.sethy.easypay.ui.state.LoginEffect
 import com.sethy.easypay.ui.state.LoginEvent
 import com.sethy.easypay.ui.viewmodel.AuthViewModel
@@ -69,41 +77,37 @@ fun LoginScreen(
 
     Scaffold(
         modifier = modifier,
-        topBar = {
-            TopNav(
-                showBackButton = true,
-                onBackClick = onBackClick
-            )
-        },
         containerColor = Canvas
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = EasyPaySpacing.xl),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(EasyPaySpacing.md, Alignment.CenterVertically)
+                .padding(horizontal = EasyPaySpacing.xl, vertical = EasyPaySpacing.lg)
         ) {
-            BrandMark(size = 72.dp)
-            Spacer(modifier = Modifier.height(EasyPaySpacing.md))
+            Spacer(modifier = Modifier.height(EasyPaySpacing.xxl))
+
             Text(
-                text = "Welcome back",
-                style = EasyPayTypography.displayMD,
+                text = "Sign in to your\nAccount",
+                style = EasyPayTypography.displayMD.copy(fontWeight = FontWeight.SemiBold),
                 color = Ink
             )
+
+            Spacer(modifier = Modifier.height(EasyPaySpacing.sm))
+
             Text(
-                text = "Sign in to your account",
+                text = "Enter your email and password to log in to your account",
                 style = EasyPayTypography.bodyMD,
                 color = Muted
             )
-            Spacer(modifier = Modifier.height(EasyPaySpacing.lg))
+
+            Spacer(modifier = Modifier.height(EasyPaySpacing.xl))
 
             TextInput(
                 value = state.email,
                 onValueChange = { viewModel.onLoginEvent(LoginEvent.EmailChanged(it)) },
                 label = "Email",
-                placeholder = "you@example.com",
+                placeholder = "Yourmail",
                 isError = state.emailError != null,
                 errorMessage = state.emailError,
                 keyboardOptions = KeyboardOptions(
@@ -113,10 +117,13 @@ fun LoginScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
+            Spacer(modifier = Modifier.height(EasyPaySpacing.md))
+
             TextInput(
                 value = state.password,
                 onValueChange = { viewModel.onLoginEvent(LoginEvent.PasswordChanged(it)) },
                 label = "Password",
+                placeholder = "Your Password",
                 isError = state.passwordError != null,
                 errorMessage = state.passwordError,
                 visualTransformation = if (passwordVisible) {
@@ -140,26 +147,22 @@ fun LoginScreen(
             )
 
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = EasyPaySpacing.xs),
                 horizontalArrangement = Arrangement.End
             ) {
                 ButtonTextLink(
-                    text = "Forgot password?",
-                    onClick = { /* TODO */ }
+                    text = "Forgot Password?",
+                    onClick = { /* TODO */ },
+                    contentColor = Primary
                 )
             }
 
-            state.errorMessage?.let {
-                Text(
-                    text = it,
-                    style = EasyPayTypography.caption,
-                    color = com.sethy.easypay.design.Error
-                )
-            }
+            Spacer(modifier = Modifier.height(EasyPaySpacing.lg))
 
-            Spacer(modifier = Modifier.height(EasyPaySpacing.md))
             ButtonPrimary(
-                text = "Sign In",
+                text = "Log In",
                 onClick = { viewModel.onLoginEvent(LoginEvent.Submit) },
                 enabled = !state.isLoading,
                 modifier = Modifier
@@ -167,15 +170,55 @@ fun LoginScreen(
                     .height(56.dp)
             )
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Spacer(modifier = Modifier.height(EasyPaySpacing.md))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
                     text = "Don't have an account? ",
                     style = EasyPayTypography.bodyMD,
                     color = Muted
                 )
                 ButtonTextLink(
-                    text = "Sign up",
-                    onClick = onSignupClick
+                    text = "Sign Up",
+                    onClick = onSignupClick,
+                    contentColor = Primary
+                )
+            }
+
+            Spacer(modifier = Modifier.height(EasyPaySpacing.xl))
+
+            OrDivider(text = "Or login with")
+
+            Spacer(modifier = Modifier.height(EasyPaySpacing.md))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(EasyPaySpacing.md)
+            ) {
+                SocialButton(
+                    text = "Google",
+                    icon = {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_google_g),
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    },
+                    onClick = { /* TODO */ },
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            state.errorMessage?.let {
+                Spacer(modifier = Modifier.height(EasyPaySpacing.md))
+                Text(
+                    text = it,
+                    style = EasyPayTypography.caption,
+                    color = Error
                 )
             }
         }

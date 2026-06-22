@@ -18,6 +18,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -28,13 +30,14 @@ fun ButtonPrimary(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    shape: Shape = MaterialTheme.shapes.medium
 ) {
     Button(
         onClick = onClick,
         modifier = modifier.heightIn(min = EasyPayDimens.buttonHeight),
         enabled = enabled,
-        shape = MaterialTheme.shapes.medium,
+        shape = shape,
         colors = ButtonDefaults.buttonColors(
             containerColor = Primary,
             contentColor = OnPrimary,
@@ -126,14 +129,15 @@ fun ButtonTextLink(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    contentColor: Color = Ink
 ) {
     TextButton(
         onClick = onClick,
         modifier = modifier.heightIn(min = EasyPayDimens.touchTarget),
         enabled = enabled,
         colors = ButtonDefaults.textButtonColors(
-            contentColor = Ink,
+            contentColor = contentColor,
             disabledContentColor = Muted
         )
     ) {
