@@ -19,17 +19,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavType
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.sethy.easypay.data.MockDataLoader
-import com.sethy.easypay.data.api.ApiProvider
-import com.sethy.easypay.data.local.AuthTokenManager
 import com.sethy.easypay.data.model.Transaction
 import com.sethy.easypay.data.model.TransactionType
 import com.sethy.easypay.data.model.User
-import com.sethy.easypay.data.repository.AuthRepository
+import com.sethy.easypay.data.source.MockDataLoader
 import com.sethy.easypay.ui.screens.HomeScreen
 import com.sethy.easypay.ui.screens.OnboardingScreen
 import com.sethy.easypay.ui.screens.ProfileScreen
@@ -54,12 +52,7 @@ fun EasyPayNavGraph() {
     var isCheckingAuth by remember { mutableStateOf(true) }
     var startDestination by remember { mutableStateOf(Route.Onboarding.route) }
 
-    val authViewModel = remember {
-        val tokenManager = AuthTokenManager(context)
-        val apiProvider = ApiProvider(tokenManager)
-        val authRepository = AuthRepository(apiProvider, tokenManager)
-        AuthViewModel(authRepository)
-    }
+    val authViewModel: AuthViewModel = hiltViewModel()
 
     LaunchedEffect(user) {
         if (user != null && transactions.isEmpty()) {

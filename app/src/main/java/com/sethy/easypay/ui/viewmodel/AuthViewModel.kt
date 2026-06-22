@@ -5,12 +5,15 @@ import androidx.lifecycle.viewModelScope
 import com.sethy.easypay.data.model.User
 import com.sethy.easypay.data.repository.AuthRepository
 import com.sethy.easypay.util.ValidationUtils
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class AuthViewModel(
+@HiltViewModel
+class AuthViewModel @Inject constructor(
     private val authRepository: AuthRepository
 ) : ViewModel() {
 
