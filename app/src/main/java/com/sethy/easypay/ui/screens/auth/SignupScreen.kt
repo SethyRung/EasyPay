@@ -1,710 +1,320 @@
 package com.sethy.easypay.ui.screens.auth
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.*
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.composables.icons.lucide.*
-import com.sethy.easypay.data.model.User
-import com.sethy.easypay.ui.components.AppTextField
-import com.sethy.easypay.ui.components.PrimaryButton
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.composables.icons.lucide.Eye
+import com.composables.icons.lucide.EyeOff
+import com.composables.icons.lucide.Lucide
+import com.sethy.easypay.design.Canvas
+import com.sethy.easypay.design.EasyPaySpacing
+import com.sethy.easypay.design.EasyPayTheme
+import com.sethy.easypay.design.EasyPayTypography
+import com.sethy.easypay.design.Ink
+import com.sethy.easypay.design.Muted
+import com.sethy.easypay.design.components.ButtonPrimary
+import com.sethy.easypay.design.components.PasswordStrengthBar
+import com.sethy.easypay.design.components.StepIndicator
+import com.sethy.easypay.design.components.TextInput
+import com.sethy.easypay.design.components.TopNav
+import com.sethy.easypay.ui.state.SignupEffect
+import com.sethy.easypay.ui.state.SignupEvent
+import com.sethy.easypay.ui.state.SignupField
 import com.sethy.easypay.ui.viewmodel.AuthViewModel
-import com.sethy.easypay.ui.theme.Success
-import com.sethy.easypay.ui.theme.TextSecondary
-import com.sethy.easypay.util.ValidationUtils
-import kotlinx.coroutines.delay
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignupScreen(
-    viewModel: AuthViewModel,
-    onSignupSuccess: (User) -> Unit,
+    viewModel: AuthViewModel = hiltViewModel(),
+    onSignupSuccess: () -> Unit,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val signupState by viewModel.signupState.collectAsState()
-    var currentStep by remember { mutableIntStateOf(0) }
-    var obscurePassword by remember { mutableStateOf(true) }
-    var acceptTerms by remember { mutableStateOf(false) }
-    var attemptedNext by remember { mutableStateOf(false) }
-
-    val animProgress = remember { Animatable(0f) }
+    val state by viewModel.signupState.collectAsStateWithLifecycle()
+    var passwordVisible by remember { mutableStateOf(false) }
+    var confirmPasswordVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        delay(100)
-        animProgress.animateTo(
-            targetValue = 1f,
-            animationSpec = tween(800, easing = FastOutSlowInEasing)
-        )
-    }
-
-    val stepIndicatorAlpha by animateFloatAsState(
-        targetValue = if (animProgress.value > 0.1f) 1f else 0f,
-        animationSpec = tween(500),
-        label = "stepIndicatorAlpha"
-    )
-
-    fun handleBack() {
-        if (currentStep > 0) {
-            currentStep--
-            attemptedNext = false
-        } else {
-            onBackClick()
-        }
-    }
-
-    fun handleNext() {
-        if (currentStep < 2) {
-            attemptedNext = true
-            if (viewModel.validateSignupStep(currentStep)) {
-                currentStep++
-                attemptedNext = false
+        viewModel.signupEffect.collect { effect ->
+            when (effect) {
+                SignupEffect.NavigateToHome -> onSignupSuccess()
+                SignupEffect.NavigateBack -> onBackClick()
+                is SignupEffect.ShowError -> { /* Handled via state.errorMessage */ }
             }
-        } else {
-            if (!acceptTerms) return
-            viewModel.signup(onSuccess = onSignupSuccess)
         }
     }
-
-    val isStepValid = if (attemptedNext) {
-        viewModel.isSignupStepValid(currentStep)
-    } else true
 
     Scaffold(
+        modifier = modifier,
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Create Account",
-                        style = MaterialTheme.typography.headlineSmall.copy(
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = { handleBack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent
-                )
+            TopNav(
+                title = "Create Account",
+                showBackButton = true,
+                onBackClick = { viewModel.onSignupEvent(SignupEvent.PreviousStep) }
             )
         },
         bottomBar = {
-            Surface(
-                shadowElevation = 8.dp,
-                color = Color.White
-            ) {
-                Column {
-                    PrimaryButton(
-                        text = if (currentStep == 2) "Create Account" else "Continue",
-                        onClick = { handleNext() },
-                        enabled = !signupState.isLoading && (currentStep != 2 || acceptTerms),
-                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)
-                    )
-                }
+            Surface(shadowElevation = 0.dp) {
+                ButtonPrimary(
+                    text = if (state.currentStep < 2) "Continue" else "Create account",
+                    onClick = {
+                        if (state.currentStep < 2) {
+                            viewModel.onSignupEvent(SignupEvent.NextStep)
+                        } else {
+                            viewModel.onSignupEvent(SignupEvent.Submit)
+                        }
+                    },
+                    enabled = !state.isLoading,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .padding(EasyPaySpacing.md)
+                )
             }
-        }
-    ) { paddingValues ->
+        },
+        containerColor = Canvas
+    ) { padding ->
         Column(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .background(Color.White)
+                .padding(padding)
+                .padding(horizontal = EasyPaySpacing.xl),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(EasyPaySpacing.lg, Alignment.Top)
         ) {
-            AnimatedStepIndicator(
-                currentStep = currentStep,
+            StepIndicator(
+                currentStep = state.currentStep,
                 totalSteps = 3,
-                modifier = Modifier
-                    .padding(horizontal = 24.dp, vertical = 16.dp)
-                    .alpha(stepIndicatorAlpha)
+                modifier = Modifier.fillMaxWidth()
             )
 
             AnimatedContent(
-                targetState = currentStep,
+                targetState = state.currentStep,
+                label = "signupStep",
                 transitionSpec = {
-                    if (targetState > initialState) {
-                        slideInHorizontally(
-                            initialOffsetX = { it },
-                            animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMediumLow)
-                        ) + fadeIn(animationSpec = tween(250)) togetherWith
-                        slideOutHorizontally(
-                            targetOffsetX = { -it / 2 },
-                            animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMediumLow)
-                        ) + fadeOut(animationSpec = tween(250))
-                    } else {
-                        slideInHorizontally(
-                            initialOffsetX = { -it },
-                            animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMediumLow)
-                        ) + fadeIn(animationSpec = tween(250)) togetherWith
-                        slideOutHorizontally(
-                            targetOffsetX = { it / 2 },
-                            animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMediumLow)
-                        ) + fadeOut(animationSpec = tween(250))
-                    }
-                },
-                label = "step_content"
+                    slideIntoContainer(androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Left) togetherWith
+                        slideOutOfContainer(androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Left)
+                }
             ) { step ->
                 when (step) {
                     0 -> StepOne(
-                        viewModel = viewModel,
-                        signupState = signupState
+                        state = state,
+                        onEvent = viewModel::onSignupEvent
                     )
                     1 -> StepTwo(
-                        viewModel = viewModel,
-                        signupState = signupState,
-                        obscurePassword = obscurePassword,
-                        onToggleObscure = { obscurePassword = !obscurePassword }
+                        state = state,
+                        onEvent = viewModel::onSignupEvent,
+                        passwordVisible = passwordVisible,
+                        onPasswordVisibilityChange = { passwordVisible = it },
+                        confirmPasswordVisible = confirmPasswordVisible,
+                        onConfirmPasswordVisibilityChange = { confirmPasswordVisible = it }
                     )
                     2 -> StepThree(
-                        acceptTerms = acceptTerms,
-                        onAcceptTermsChange = { acceptTerms = it }
+                        state = state,
+                        onEvent = viewModel::onSignupEvent
                     )
                 }
             }
-        }
-    }
-}
 
-@Composable
-private fun AnimatedStepIndicator(
-    currentStep: Int,
-    totalSteps: Int,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        for (i in 0 until totalSteps) {
-            AnimatedStepCircle(
-                index = i,
-                isActive = i == currentStep,
-                isCompleted = i < currentStep
-            )
-
-            if (i < totalSteps - 1) {
-                AnimatedStepConnector(isActive = i < currentStep)
+            state.errorMessage?.let {
+                Text(
+                    text = it,
+                    style = EasyPayTypography.caption,
+                    color = com.sethy.easypay.design.Error
+                )
             }
         }
-    }
-}
-
-@Composable
-private fun AnimatedStepCircle(
-    index: Int,
-    isActive: Boolean,
-    isCompleted: Boolean
-) {
-    val targetScale = if (isActive) 1.15f else 1f
-    val scale by animateFloatAsState(
-        targetValue = targetScale,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium),
-        label = "stepScale"
-    )
-
-    val backgroundColor = when {
-        isActive || isCompleted -> MaterialTheme.colorScheme.primary
-        else -> MaterialTheme.colorScheme.surfaceVariant
-    }
-
-    val contentColor = when {
-        isActive || isCompleted -> MaterialTheme.colorScheme.onPrimary
-        else -> MaterialTheme.colorScheme.onSurfaceVariant
-    }
-
-    Box(
-        modifier = Modifier
-            .size(32.dp)
-            .background(backgroundColor, CircleShape)
-            .scale(scale),
-        contentAlignment = Alignment.Center
-    ) {
-        if (isCompleted) {
-            Icon(
-                imageVector = Lucide.Check,
-                contentDescription = null,
-                tint = contentColor,
-                modifier = Modifier.size(16.dp)
-            )
-        } else {
-            Text(
-                text = "${index + 1}",
-                style = MaterialTheme.typography.labelSmall.copy(
-                    fontWeight = FontWeight.SemiBold
-                ),
-                color = contentColor
-            )
-        }
-    }
-}
-
-@Composable
-private fun RowScope.AnimatedStepConnector(isActive: Boolean) {
-    val targetWidth = if (isActive) 1f else 0f
-    val progress by animateFloatAsState(
-        targetValue = targetWidth,
-        animationSpec = tween(400, easing = FastOutSlowInEasing),
-        label = "connectorProgress"
-    )
-
-    Box(
-        modifier = Modifier
-            .weight(1f)
-            .height(3.dp)
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.outlineVariant)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxHeight()
-                .fillMaxWidth(progress)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primary)
-        )
     }
 }
 
 @Composable
 private fun StepOne(
-    viewModel: AuthViewModel,
-    signupState: com.sethy.easypay.ui.viewmodel.SignupUiState
+    state: com.sethy.easypay.ui.state.SignupUiState,
+    onEvent: (SignupEvent) -> Unit
 ) {
-    val animProgress = remember { Animatable(0f) }
-
-    LaunchedEffect(Unit) {
-        animProgress.animateTo(1f, animationSpec = tween(600, easing = FastOutSlowInEasing))
-    }
-
-    val offset by animateFloatAsState(
-        targetValue = if (animProgress.value > 0.1f) 0f else 60f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessMedium),
-        label = "stepOneOffset"
-    )
-    val alpha by animateFloatAsState(
-        targetValue = if (animProgress.value > 0.1f) 1f else 0f,
-        animationSpec = tween(500),
-        label = "stepOneAlpha"
-    )
-
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp)
-            .offset(y = offset.dp)
-            .alpha(alpha)
+        verticalArrangement = Arrangement.spacedBy(EasyPaySpacing.md),
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Text(
-            text = "What's your name?",
-            style = MaterialTheme.typography.headlineLarge.copy(
-                fontWeight = FontWeight.Bold
-            )
+        TextInput(
+            value = state.name,
+            onValueChange = { onEvent(SignupEvent.NameChanged(it)) },
+            label = "Full name",
+            isError = state.nameError != null,
+            errorMessage = state.nameError,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            modifier = Modifier.fillMaxWidth()
         )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = "We'd love to personalize your experience.",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        AppTextField(
-            value = signupState.name,
-            onValueChange = viewModel::updateSignupName,
-            label = "Full Name",
-            placeholder = "John Doe",
-            isError = signupState.nameError != null,
-            errorMessage = signupState.nameError,
-            imeAction = ImeAction.Next,
-            onImeAction = { viewModel.touchSignupName() },
-            leadingIcon = {
-                Icon(
-                    imageVector = Lucide.User,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        AppTextField(
-            value = signupState.email,
-            onValueChange = viewModel::updateSignupEmail,
+        TextInput(
+            value = state.email,
+            onValueChange = { onEvent(SignupEvent.EmailChanged(it)) },
             label = "Email",
             placeholder = "you@example.com",
-            isError = signupState.emailError != null,
-            errorMessage = signupState.emailError,
-            keyboardType = KeyboardType.Email,
-            imeAction = ImeAction.Done,
-            onImeAction = { viewModel.touchSignupEmail() },
-            leadingIcon = {
-                Icon(
-                    imageVector = Lucide.Mail,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            isError = state.emailError != null,
+            errorMessage = state.emailError,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Email,
+                imeAction = ImeAction.Next
+            ),
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }
 
 @Composable
 private fun StepTwo(
-    viewModel: AuthViewModel,
-    signupState: com.sethy.easypay.ui.viewmodel.SignupUiState,
-    obscurePassword: Boolean,
-    onToggleObscure: () -> Unit
+    state: com.sethy.easypay.ui.state.SignupUiState,
+    onEvent: (SignupEvent) -> Unit,
+    passwordVisible: Boolean,
+    onPasswordVisibilityChange: (Boolean) -> Unit,
+    confirmPasswordVisible: Boolean,
+    onConfirmPasswordVisibilityChange: (Boolean) -> Unit
 ) {
-    var obscureConfirmPassword by remember { mutableStateOf(true) }
-    val animProgress = remember { Animatable(0f) }
-
-    LaunchedEffect(Unit) {
-        animProgress.animateTo(1f, animationSpec = tween(600, easing = FastOutSlowInEasing))
-    }
-
-    val offset by animateFloatAsState(
-        targetValue = if (animProgress.value > 0.1f) 0f else 60f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessMedium),
-        label = "stepTwoOffset"
-    )
-    val alpha by animateFloatAsState(
-        targetValue = if (animProgress.value > 0.1f) 1f else 0f,
-        animationSpec = tween(500),
-        label = "stepTwoAlpha"
-    )
-
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp)
-            .offset(y = offset.dp)
-            .alpha(alpha)
+        verticalArrangement = Arrangement.spacedBy(EasyPaySpacing.md),
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Text(
-            text = "Secure your account",
-            style = MaterialTheme.typography.headlineLarge.copy(
-                fontWeight = FontWeight.Bold
-            )
+        TextInput(
+            value = state.phone,
+            onValueChange = { onEvent(SignupEvent.PhoneChanged(it)) },
+            label = "Phone number",
+            isError = state.phoneError != null,
+            errorMessage = state.phoneError,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Phone,
+                imeAction = ImeAction.Next
+            ),
+            modifier = Modifier.fillMaxWidth()
         )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = "Add your phone number and create a strong password.",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        AppTextField(
-            value = signupState.phone,
-            onValueChange = viewModel::updateSignupPhone,
-            label = "Phone Number",
-            placeholder = "+1 234 567 890",
-            isError = signupState.phoneError != null,
-            errorMessage = signupState.phoneError,
-            keyboardType = KeyboardType.Phone,
-            imeAction = ImeAction.Next,
-            onImeAction = { viewModel.touchSignupPhone() },
-            leadingIcon = {
-                Icon(
-                    imageVector = Lucide.Phone,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        AppTextField(
-            value = signupState.password,
-            onValueChange = viewModel::updateSignupPassword,
+        TextInput(
+            value = state.password,
+            onValueChange = { onEvent(SignupEvent.PasswordChanged(it)) },
             label = "Password",
-            placeholder = "••••••••",
-            isError = signupState.passwordError != null,
-            errorMessage = signupState.passwordError,
-            visualTransformation = if (obscurePassword) PasswordVisualTransformation() else VisualTransformation.None,
-            imeAction = ImeAction.Next,
-            onImeAction = { viewModel.touchSignupPassword() },
-            leadingIcon = {
-                Icon(
-                    imageVector = Lucide.Lock,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            },
+            isError = state.passwordError != null,
+            errorMessage = state.passwordError,
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
-                IconButton(onClick = onToggleObscure) {
+                IconButton(onClick = { onPasswordVisibilityChange(!passwordVisible) }) {
                     Icon(
-                        imageVector = if (obscurePassword) Lucide.EyeOff else Lucide.Eye,
-                        contentDescription = if (obscurePassword) "Show password" else "Hide password",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        imageVector = if (passwordVisible) Lucide.EyeOff else Lucide.Eye,
+                        contentDescription = if (passwordVisible) "Hide password" else "Show password"
                     )
                 }
-            }
-        )
-
-        if (signupState.password.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(12.dp))
-            PasswordStrengthBar(
-                strength = signupState.passwordStrength,
-                requirements = signupState.passwordRequirements
-            )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        AppTextField(
-            value = signupState.confirmPassword,
-            onValueChange = viewModel::updateSignupConfirmPassword,
-            label = "Confirm Password",
-            placeholder = "••••••••",
-            isError = signupState.confirmPasswordError != null,
-            errorMessage = signupState.confirmPasswordError,
-            visualTransformation = if (obscureConfirmPassword) PasswordVisualTransformation() else VisualTransformation.None,
-            imeAction = ImeAction.Done,
-            onImeAction = { viewModel.touchSignupConfirmPassword() },
-            leadingIcon = {
-                Icon(
-                    imageVector = Lucide.Lock,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
             },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Next
+            ),
+            modifier = Modifier.fillMaxWidth()
+        )
+        TextInput(
+            value = state.confirmPassword,
+            onValueChange = { onEvent(SignupEvent.ConfirmPasswordChanged(it)) },
+            label = "Confirm password",
+            isError = state.confirmPasswordError != null,
+            errorMessage = state.confirmPasswordError,
+            visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
-                IconButton(onClick = { obscureConfirmPassword = !obscureConfirmPassword }) {
+                IconButton(onClick = { onConfirmPasswordVisibilityChange(!confirmPasswordVisible) }) {
                     Icon(
-                        imageVector = if (obscureConfirmPassword) Lucide.EyeOff else Lucide.Eye,
-                        contentDescription = if (obscureConfirmPassword) "Show password" else "Hide password",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        imageVector = if (confirmPasswordVisible) Lucide.EyeOff else Lucide.Eye,
+                        contentDescription = if (confirmPasswordVisible) "Hide password" else "Show password"
                     )
                 }
-            }
+            },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Done
+            ),
+            modifier = Modifier.fillMaxWidth()
         )
-    }
-}
-
-@Composable
-private fun PasswordStrengthBar(
-    strength: ValidationUtils.PasswordStrength,
-    requirements: ValidationUtils.PasswordRequirements
-) {
-    val (trackColor, strengthLabel) = when (strength) {
-        ValidationUtils.PasswordStrength.WEAK -> Color(0xFFFF6B6B) to "Weak"
-        ValidationUtils.PasswordStrength.MEDIUM -> Color(0xFFFFA502) to "Medium"
-        ValidationUtils.PasswordStrength.STRONG -> Success to "Strong"
-    }
-
-    val progress = when (strength) {
-        ValidationUtils.PasswordStrength.WEAK -> 0.33f
-        ValidationUtils.PasswordStrength.MEDIUM -> 0.66f
-        ValidationUtils.PasswordStrength.STRONG -> 1f
-    }
-
-    val animatedProgress by animateFloatAsState(
-        targetValue = progress,
-        animationSpec = tween(300, easing = FastOutSlowInEasing),
-        label = "strengthProgress"
-    )
-
-    Column {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(4.dp)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .fillMaxWidth(animatedProgress)
-                        .clip(RoundedCornerShape(2.dp))
-                        .background(trackColor)
-                )
-            }
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Text(
-                text = strengthLabel,
-                style = MaterialTheme.typography.labelSmall.copy(
-                    fontWeight = FontWeight.SemiBold
-                ),
-                color = trackColor
-            )
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        PasswordRequirementItem(
-            label = "At least 8 characters",
-            met = requirements.minLength
-        )
-        PasswordRequirementItem(
-            label = "One uppercase letter",
-            met = requirements.hasUppercase
-        )
-        PasswordRequirementItem(
-            label = "One lowercase letter",
-            met = requirements.hasLowercase
-        )
-        PasswordRequirementItem(
-            label = "One number",
-            met = requirements.hasNumber
-        )
-    }
-}
-
-@Composable
-private fun PasswordRequirementItem(
-    label: String,
-    met: Boolean
-) {
-    val color = if (met) Success else TextSecondary
-    val icon = if (met) Lucide.Check else Lucide.Circle
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(vertical = 2.dp)
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = color,
-            modifier = Modifier.size(14.dp)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodySmall,
-            color = color
+        PasswordStrengthBar(
+            strength = state.passwordStrength,
+            requirements = state.passwordRequirements,
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }
 
 @Composable
 private fun StepThree(
-    acceptTerms: Boolean,
-    onAcceptTermsChange: (Boolean) -> Unit
+    state: com.sethy.easypay.ui.state.SignupUiState,
+    onEvent: (SignupEvent) -> Unit
 ) {
-    val animProgress = remember { Animatable(0f) }
-
-    LaunchedEffect(Unit) {
-        animProgress.animateTo(1f, animationSpec = tween(600, easing = FastOutSlowInEasing))
-    }
-
-    val offset by animateFloatAsState(
-        targetValue = if (animProgress.value > 0.1f) 0f else 60f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessMedium),
-        label = "stepThreeOffset"
-    )
-    val alpha by animateFloatAsState(
-        targetValue = if (animProgress.value > 0.1f) 1f else 0f,
-        animationSpec = tween(500),
-        label = "stepThreeAlpha"
-    )
-
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp)
-            .offset(y = offset.dp)
-            .alpha(alpha)
+        verticalArrangement = Arrangement.spacedBy(EasyPaySpacing.md),
+        modifier = Modifier.fillMaxWidth()
     ) {
         Text(
-            text = "Almost there!",
-            style = MaterialTheme.typography.headlineLarge.copy(
-                fontWeight = FontWeight.Bold
-            )
+            text = "Review your information",
+            style = EasyPayTypography.titleMD,
+            color = Ink
         )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
         Text(
-            text = "Review and accept our terms to finish.",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            text = "Name: ${state.name}",
+            style = EasyPayTypography.bodyMD,
+            color = Ink
         )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(MaterialTheme.shapes.medium),
-            color = MaterialTheme.colorScheme.surfaceVariant,
-            shape = MaterialTheme.shapes.medium
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Checkbox(
-                    checked = acceptTerms,
-                    onCheckedChange = onAcceptTermsChange
-                )
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                Text(
-                    text = buildAnnotatedString {
-                        append("I agree to the ")
-                        withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)) {
-                            append("Terms of Service")
-                        }
-                        append(" and ")
-                        withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)) {
-                            append("Privacy Policy")
-                        }
-                    },
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
+        Text(
+            text = "Email: ${state.email}",
+            style = EasyPayTypography.bodyMD,
+            color = Ink
+        )
+        Text(
+            text = "Phone: ${state.phone}",
+            style = EasyPayTypography.bodyMD,
+            color = Ink
+        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Checkbox(
+                checked = state.termsAccepted,
+                onCheckedChange = { onEvent(SignupEvent.TermsAcceptedChanged(it)) }
+            )
+            Text(
+                text = "I agree to the Terms and Privacy Policy",
+                style = EasyPayTypography.bodySM,
+                color = Muted
+            )
         }
+    }
+}
+
+@Preview
+@Composable
+private fun SignupScreenPreview() {
+    EasyPayTheme {
+        SignupScreen(
+            onSignupSuccess = {},
+            onBackClick = {}
+        )
     }
 }
