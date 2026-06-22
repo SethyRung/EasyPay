@@ -37,6 +37,7 @@ import com.sethy.easypay.ui.screens.auth.SignupScreen
 import com.sethy.easypay.ui.screens.home.HomeScreen
 import com.sethy.easypay.ui.screens.onboarding.OnboardingScreen
 import com.sethy.easypay.ui.screens.notifications.NotificationsScreen
+import com.sethy.easypay.ui.screens.profile.ProfileScreen
 import com.sethy.easypay.ui.screens.send.SendMoneyScreen
 import com.sethy.easypay.ui.screens.send.TransferSuccessScreen
 import com.sethy.easypay.ui.screens.transactions.TransactionDetailScreen
@@ -152,7 +153,14 @@ fun EasyPayNavGraph(
             popEnterTransition = { slideRightEnter() },
             popExitTransition = { slideRightExit() }
         ) {
-            ProfileStub(navController)
+            ProfileScreen(
+                onNavigateToOnboarding = {
+                    navController.navigate(Route.Onboarding.route) {
+                        popUpTo(Route.Home.route) { inclusive = true }
+                    }
+                },
+                onBackClick = { navController.popBackStack() }
+            )
         }
 
         composable(
@@ -313,12 +321,7 @@ private fun CalendarStub(navController: NavController) {
     }
 }
 
-@Composable
-private fun ProfileStub(navController: NavController) {
-    StubScaffold(title = "Profile", showBack = true, navController = navController) {
-        Text("Profile", style = MaterialTheme.typography.titleMedium)
-    }
-}
+
 
 
 @Composable
