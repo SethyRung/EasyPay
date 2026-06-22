@@ -1,19 +1,16 @@
 package com.sethy.easypay.ui.viewmodel
 
-import com.sethy.easypay.data.model.User
 import com.sethy.easypay.domain.usecase.LoginUseCase
 import com.sethy.easypay.domain.usecase.RegisterUseCase
 import com.sethy.easypay.ui.state.LoginEvent
 import com.sethy.easypay.ui.state.SignupEvent
-import com.sethy.easypay.ui.state.SignupField
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
 import org.junit.Test
 import kotlinx.coroutines.test.runTest
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
 
 class AuthViewModelTest {
 
@@ -71,13 +68,26 @@ class AuthViewModelTest {
     // ─── Signup state validation ───────────────────────────────────────────
 
     @Test
-    fun signup_validates_name_on_touch() = runTest {
+    fun signup_name_validation_fires_as_user_types() = runTest {
         val vm = createViewModel()
 
         vm.onSignupEvent(SignupEvent.NameChanged("A"))
-        vm.onSignupEvent(SignupEvent.FieldTouched(SignupField.NAME))
 
         assertEquals("Name must be at least 2 characters", vm.signupState.value.nameError)
+    }
+
+    @Test
+    fun signup_validates_all_fields_on_submit() = runTest {
+        val vm = createViewModel()
+
+        vm.onSignupEvent(SignupEvent.Submit)
+
+        assertEquals("Name is required", vm.signupState.value.nameError)
+        assertEquals("Email is required", vm.signupState.value.emailError)
+        assertNotNull(vm.signupState.value.phoneError)
+        assertNotNull(vm.signupState.value.passwordError)
+        assertNotNull(vm.signupState.value.confirmPasswordError)
+        assertFalse(vm.signupState.value.isLoading)
     }
 
     @Test
@@ -86,7 +96,6 @@ class AuthViewModelTest {
 
         vm.onSignupEvent(SignupEvent.PasswordChanged("Pass1"))
 
-        assertTrue(vm.signupState.value.passwordStrength != null)
         assertEquals(
             com.sethy.easypay.design.components.PasswordStrength.WEAK,
             vm.signupState.value.passwordStrength
@@ -94,36 +103,21 @@ class AuthViewModelTest {
     }
 
     @Test
-    fun signup_advances_step_when_NextStep_is_valid() = runTest {
+    fun signup_confirmPassword_error_fires_when_mismatch() = runTest {
         val vm = createViewModel()
 
-        vm.onSignupEvent(SignupEvent.NameChanged("Alice Smith"))
-        vm.onSignupEvent(SignupEvent.EmailChanged("alice@example.com"))
-        vm.onSignupEvent(SignupEvent.NextStep)
+        vm.onSignupEvent(SignupEvent.PasswordChanged("Password1"))
+        vm.onSignupEvent(SignupEvent.ConfirmPasswordChanged("different"))
 
-        assertEquals(1, vm.signupState.value.currentStep)
-    }
-
-    @Test
-    fun signup_does_not_advance_step_when_name_is_invalid() = runTest {
-        val vm = createViewModel()
-
-        vm.onSignupEvent(SignupEvent.NameChanged(""))
-        vm.onSignupEvent(SignupEvent.EmailChanged("alice@example.com"))
-        vm.onSignupEvent(SignupEvent.NextStep)
-
-        assertEquals(0, vm.signupState.value.currentStep)
+        assertNotNull(vm.signupState.value.confirmPasswordError)
     }
 
     @Test
     fun signup_dismissError_clears_error_message() = runTest {
         val vm = createViewModel()
 
-        // Trigger validation error by touching fields with blank values
-        vm.onSignupEvent(SignupEvent.FieldTouched(SignupField.NAME))
-        assertEquals("Name is required", vm.signupState.value.nameError)
+        vm.onSignupEvent(SignupEvent.Submit)
 
-        // DismissError clears error message (set during previous validation)
         vm.onSignupEvent(SignupEvent.DismissError)
         assertNull(vm.signupState.value.errorMessage)
     }
