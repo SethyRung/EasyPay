@@ -11,20 +11,10 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.NavType
@@ -36,6 +26,7 @@ import com.sethy.easypay.ui.screens.auth.LoginScreen
 import com.sethy.easypay.ui.screens.auth.SignupScreen
 import com.sethy.easypay.ui.screens.home.HomeScreen
 import com.sethy.easypay.ui.screens.onboarding.OnboardingScreen
+import com.sethy.easypay.ui.screens.calendar.CalendarScreen
 import com.sethy.easypay.ui.screens.notifications.NotificationsScreen
 import com.sethy.easypay.ui.screens.profile.ProfileScreen
 import com.sethy.easypay.ui.screens.send.SendMoneyScreen
@@ -133,7 +124,9 @@ fun EasyPayNavGraph(
             popEnterTransition = { slideRightEnter() },
             popExitTransition = { slideRightExit() }
         ) {
-            CalendarStub(navController)
+            CalendarScreen(
+                onBackClick = { navController.popBackStack() }
+            )
         }
 
         composable(
@@ -312,48 +305,3 @@ private fun AnimatedContentTransitionScope<NavBackStackEntry>.scaleFadeExit() =
         animationSpec = tween(300)
     ) + fadeOut(tween(300))
 
-// ── Stub screens ──────────────────────────────────────────────────────────────
-
-@Composable
-private fun CalendarStub(navController: NavController) {
-    StubScaffold(title = "Calendar", showBack = true, navController = navController) {
-        Text("Coming soon", style = MaterialTheme.typography.titleMedium)
-    }
-}
-
-
-
-
-@Composable
-private fun StubScaffold(
-    title: String,
-    showBack: Boolean = false,
-    navController: NavController? = null,
-    content: @Composable ColumnScope.() -> Unit
-) {
-    Scaffold(
-        topBar = {
-            androidx.compose.material3.TopAppBar(
-                title = { Text(title) },
-                navigationIcon = {
-                    if (showBack && navController != null) {
-                        TextButton(onClick = { navController.popBackStack() }) {
-                            Text("Back")
-                        }
-                    }
-                }
-            )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
-        ) {
-            content()
-        }
-    }
-}
