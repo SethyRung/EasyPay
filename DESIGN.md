@@ -1,13 +1,21 @@
 ---
 version: alpha
 name: Claude-design-analysis
-description: A warm-canvas editorial interface for Anthropic's Claude product. The system anchors on a tinted cream canvas, warm coral CTAs, and dark navy product surfaces. Brand voltage comes from the cream/coral pairing — deliberately warm and humanist where most AI brands use cool blue + slate. Type voice runs **Geist**  as a single family for the entire app — display and body both, distinguished by weight and tracking rather than a serif/sans split. The signature Anthropic black-radial-spike mark anchors the wordmark.
+description: A warm-canvas editorial interface for Anthropic's Claude product. The system anchors on a tinted cream canvas, warm coral CTAs, and dark navy product surfaces. Brand voltage comes from the cream/coral pairing — deliberately warm and humanist where most AI brands use cool blue + slate. Type voice uses three Geist families (v1.7.2): **Geist** (sans) for the entire app — display, body, and navigation, distinguished by weight and tracking rather than a serif/sans split; **Geist Mono** for code blocks, terminal output, and inline code; **Geist Pixel** as a decorative pixel-art accent family with five shape variants (Square, Grid, Line, Circle, Triangle) for hero moments and special accents. The signature Anthropic black-radial-spike mark anchors the wordmark.
 
 fonts:
+  - family: Geist Mono
+    source: geist-font-v1.7.2
+    weights: [Regular, Medium, SemiBold]
+    use: display headlines, titles, code blocks, terminal output, inline code
   - family: Geist
     source: geist-font-v1.7.2
     weights: [Regular, Medium, SemiBold]
-    use: body, navigation, buttons, captions, labels (entire app — single-family system)
+    use: body, navigation, buttons, captions, labels (sans workhorse)
+  - family: Geist Pixel
+    source: geist-font-v1.7.2
+    shapes: [Square, Grid, Line, Circle, Triangle]
+    use: decorative hero accents, inline accents, "pixel" data moments (display only)
 
 colors:
   primary: "#cc785c"
@@ -38,43 +46,43 @@ colors:
 
 typography:
   display-xl:
-    fontFamily: "Geist, sans-serif"
+    fontFamily: "Geist Mono, ui-monospace, monospace"
     fontSize: 64px
     fontWeight: 400
     lineHeight: 1.05
     letterSpacing: -1.5px
   display-lg:
-    fontFamily: "Geist, sans-serif"
+    fontFamily: "Geist Mono, ui-monospace, monospace"
     fontSize: 48px
     fontWeight: 400
     lineHeight: 1.1
     letterSpacing: -1px
   display-md:
-    fontFamily: "Geist, sans-serif"
+    fontFamily: "Geist Mono, ui-monospace, monospace"
     fontSize: 36px
     fontWeight: 400
     lineHeight: 1.15
     letterSpacing: -0.5px
   display-sm:
-    fontFamily: "Geist, sans-serif"
+    fontFamily: "Geist Mono, ui-monospace, monospace"
     fontSize: 28px
     fontWeight: 400
     lineHeight: 1.2
     letterSpacing: -0.3px
   title-lg:
-    fontFamily: "Geist, sans-serif"
+    fontFamily: "Geist Mono, ui-monospace, monospace"
     fontSize: 22px
     fontWeight: 500
     lineHeight: 1.3
     letterSpacing: 0
   title-md:
-    fontFamily: "Geist, sans-serif"
+    fontFamily: "Geist Mono, ui-monospace, monospace"
     fontSize: 18px
     fontWeight: 500
     lineHeight: 1.4
     letterSpacing: 0
   title-sm:
-    fontFamily: "Geist, sans-serif"
+    fontFamily: "Geist Mono, ui-monospace, monospace"
     fontSize: 16px
     fontWeight: 500
     lineHeight: 1.4
@@ -110,13 +118,13 @@ typography:
     lineHeight: 1.6
     letterSpacing: 0
   button:
-    fontFamily: "Geist, sans-serif"
+    fontFamily: "Geist Mono, ui-monospace, monospace"
     fontSize: 14px
     fontWeight: 500
     lineHeight: 1
     letterSpacing: 0
   nav-link:
-    fontFamily: "Geist, sans-serif"
+    fontFamily: "Geist Mono, ui-monospace, monospace"
     fontSize: 14px
     fontWeight: 500
     lineHeight: 1.4
@@ -372,15 +380,23 @@ The dark surfaces are where Claude shows its product chrome — code blocks, ter
 
 ### Font Family
 
-The system uses **Geist** as the single type family for the entire app — display and body both. **Geist Mono** (companion family, also in v1.7.2) handles code blocks. This is a deliberate simplification: rather than a serif/sans split, Geist's wide weight range (Regular 400, Medium 500, SemiBold 600) plus its negative-tracking display treatment at weight 400 carries the editorial voice. The cream canvas + generous tracking treatment + the wide weight range does the heavy lifting that a slab-serif would normally do.
+The system uses three families from the Geist family (v1.7.2):
 
-The single-family voice is:
+- **Geist Mono** — display headlines, titles, and code blocks (the typographic voice)
+- **Geist** (sans) — the body workhorse; body copy, navigation, buttons, captions, labels
+- **Geist Pixel** — decorative accent; 5 shape variants (Square, Grid, Line, Circle, Triangle) for hero moments and special inline accents
 
-- **Geist Regular** (weight 400, negative tracking) → display headlines (h1, h2, h3, hero)
-- **Geist Medium** (weight 500) → titles, nav links, buttons, labels, emphasized body
-- **Geist SemiBold** (weight 600) → headlines (`headlineLarge`/`headlineMedium`), strong titles
+The split is deliberately **mono for display + titles, sans for everything else**: the monospace display gives the system a "terminal / ledger" voice that suits a wallet product, while Geist Sans keeps long-form body copy and small UI text comfortable to read. Rather than a serif/sans split, the mono/sans contrast does the editorial work.
+
+The voice per family:
+
+- **Geist Mono Regular** (weight 400, negative tracking) → display headlines (h1, h2, h3, hero)
+- **Geist Mono Medium** (weight 500) → titles (`titleLG`/`titleMD`/`titleSM`)
 - **Geist Regular** (weight 400) → body, captions, fine-print
+- **Geist Medium** (weight 500) → nav links, buttons, labels, emphasized body
+- **Geist SemiBold** (weight 600) → strong titles, emphasized buttons
 - **Geist Mono** → all code blocks and terminal text
+- **Geist Pixel** (one of 5 shapes) → decorative hero accents, inline pixel accents, "data" moments
 
 ### Hierarchy
 
@@ -403,13 +419,35 @@ The single-family voice is:
 
 ### Principles
 
-Display sizes use weight 400 (Regular) with negative letter-spacing (-0.3 to -1.5px) — the tracking treatment is the editorial voice. Without negative tracking, Geist display reads as plain sans and loses the literary feel. Display never goes above 600 weight; emphasis is achieved by size, not by bolding.
+Display sizes use **Geist Mono Regular** at weight 400 with negative letter-spacing (-0.3 to -1.5px) — the monospaced rhythm and the tightened tracking together carry the editorial / terminal voice. Display never goes above 600 weight; emphasis is achieved by size, not by bolding.
 
-Body type stays at weight 400 (Regular) for paragraphs and weight 500 (Medium) for labels, buttons, and emphasized phrases. **Geist Mono** is the companion family for all code/terminal text.
+Titles use **Geist Mono Medium** at weights 500; titles keep neutral letter-spacing (0) so each glyph occupies its full mono cell. The fixed advance width is part of the voice — don't compensate for it with manual letter-spacing.
+
+Body type stays on **Geist (sans)** at weight 400 for paragraphs and weight 500 for labels, buttons, and emphasized phrases. **Geist Mono** also handles all code/terminal text. **Geist Pixel** is reserved for display-sized decorative moments only — never used in body copy, captions, or labels.
+
+### Geist Pixel
+
+Geist Pixel is a display-only accent family shipped in five distinct shape variants of the same letterform:
+
+| Variant  | Visual                     | Use                                                |
+| -------- | -------------------------- | -------------------------------------------------- |
+| Square   | Solid square pixels        | Hero numerals, "wallet balance" pixel moment, brand wordmark variant |
+| Grid     | Outlined / gridded pixels  | Section dividers, decorative inline accents        |
+| Line     | Linear / horizontal strokes | Loading skeletons, "scan-line" stylized moments    |
+| Circle   | Circular pixel shapes      | Status indicators (decorative), pixel-art icons    |
+| Triangle | Triangular pixel shapes    | Error / warning decorative moments                 |
+
+Geist Pixel ships as five static TTFs (`GeistPixel-{Square,Grid,Line,Circle,Triangle}.ttf`) and a single variable font `GeistPixel[ELSH].ttf` covering the ELSH axis (Empty / Line / Square / Hex). Triangle is a static-only style and lives outside the variable axis.
+
+**Rules of use:**
+- Always at `display` sizes (24px+) — the pixel grid is illegible below that threshold.
+- One variant per page. Never mix two pixel shapes in the same composition.
+- Treat the choice of shape as a deliberate design statement — Square for balance displays, Grid for editorial dividers, Line for loading/process moments, Circle for status, Triangle for error.
+- Never recolor away from the system palette; the pixel art is the message.
 
 ### Note on Font Substitutes
 
-**Geist** is the primary face and the only face in active use. **Geist Mono** is the companion family. If Geist is unavailable in the future, the closest open-source alternatives are **Inter** (for body/nav/labels — both are humanist sans) and **Söhne** (closest licensed analog). For display, switching to a slab-serif (Copernicus / Tiempos / Cormorant Garamond) at weight 500 with -0.02em tracking would partially restore the original editorial voice described in this document's history.
+**Geist** is the primary face and the workhorse of the system. **Geist Mono** and **Geist Pixel** are companion families — Mono for code, Pixel for decorative display. If Geist is unavailable in the future, the closest open-source alternatives are **Inter** (for body/nav/labels — both are humanist sans) and **Söhne** (closest licensed analog). For display, switching to a slab-serif (Copernicus / Tiempos / Cormorant Garamond) at weight 500 with -0.02em tracking would partially restore the original editorial voice described in this document's history. If Geist Mono is unavailable, **JetBrains Mono** or **IBM Plex Mono** are close substitutes. If Geist Pixel is unavailable, no drop-in exists — fall back to a chunky pixel-style display face (e.g. **Press Start 2P**, **VT323**) and accept the loss of the ELSH shape axis.
 
 ## Layout
 
@@ -562,7 +600,7 @@ When photography is used (rare — mostly testimonials), avatars crop to perfect
 - Don't bold display weight past 600. Display is Regular 400 with negative tracking; emphasis is achieved by size, not by bolding.
 - Don't use cool blue or saturated cyan as a brand accent. The coral is the brand voltage.
 - Don't put coral everywhere. The coral is scarce on individual elements and generous only on full-bleed coral callout cards.
-- Don't introduce a second type family for body. Geist is the only family.
+- Don't introduce a second type family for body. Geist is the only sans family. Mono and Pixel are the only companions.
 - Don't repeat the same surface mode in two consecutive bands. The pacing alternates: cream → cream-card → dark-mockup → cream → coral-callout → dark-footer.
 - Don't add hover state styling beyond what the system already encodes — primary darkens on press; nothing else changes.
 
@@ -604,13 +642,15 @@ When photography is used (rare — mostly testimonials), avatars crop to perfect
 2. Variants of an existing component (`-active`, `-disabled`, `-focused`) live as separate entries in `components:`.
 3. Use `{token.refs}` everywhere — never inline hex.
 4. Never document hover. Default and Active/Pressed states only.
-5. Display headlines stay Geist Regular 400 with negative tracking. Body stays Geist Regular/Medium. The single-family voice is the system.
+5. Display headlines stay Geist Regular 400 with negative tracking. Body stays Geist Regular/Medium. Geist Mono is reserved for code; Geist Pixel is reserved for decorative display. The single sans-family voice is the system.
 6. Cream + coral + dark navy is the trinity. Don't introduce a fourth surface tone (no purple cards, no green sections).
 7. When in doubt about emphasis: bigger Copernicus serif before bolder weight.
 
 ## Known Gaps
 
 - Copernicus and StyreneB are licensed Anthropic typefaces and not available as public web fonts. Substitutes (Tiempos Headline / Cormorant Garamond / EB Garamond for serif; Inter / Söhne for sans) are documented in the typography section.
+- The Geist Pixel variable font `GeistPixel[ELSH].ttf` covers only 4 of the 5 static shapes (Empty/Line/Square/Hex). The `Triangle` shape ships as a static-only TTF. Plan composition around this gap if you need pixel-triangle in a flow that varies.
+- Geist Pixel's shape-variants (ELSH axis) are decorative; the font does not ship with weight variations — if you need weight contrast inside a pixel moment, drop back to Geist Sans for the same composition.
 - The Anthropic radial-spike-mark is a brand glyph rendered as inline SVG; it's not formalized as a system token here. Treat it as a logo asset.
 - Animation and transition timings (chat message reveal, code block typewriter effect on the homepage, agentic-flow diagram animations) are not in scope.
 - Form validation states beyond `{component.text-input-focused}` are not extracted — error / success states would need a sign-up or feedback flow to confirm.
