@@ -1,7 +1,7 @@
 /*
  * Design system typography from DESIGN.md.
- * Uses Geist as the single type family; Geist Mono is not bundled,
- * so the system monospace family is used as a fallback for code blocks.
+ * Geist (sans) for body, buttons, labels, captions, nav links.
+ * Geist Mono for display headlines, titles, and code blocks.
  */
 package com.sethy.easypay.design
 
@@ -19,53 +19,57 @@ val Geist = FontFamily(
     Font(R.font.geist_semibold, FontWeight.SemiBold)
 )
 
-val GeistMono = FontFamily.Monospace
+val GeistMono = FontFamily(
+    Font(R.font.geist_mono_regular, FontWeight.Normal),
+    Font(R.font.geist_mono_medium, FontWeight.Medium),
+    Font(R.font.geist_mono_semibold, FontWeight.SemiBold)
+)
 
 object EasyPayTypography {
     val displayXL = TextStyle(
-        fontFamily = Geist,
+        fontFamily = GeistMono,
         fontWeight = FontWeight.Normal,
         fontSize = 64.sp,
         lineHeight = 67.2.sp,
         letterSpacing = (-1.5).sp
     )
     val displayLG = TextStyle(
-        fontFamily = Geist,
+        fontFamily = GeistMono,
         fontWeight = FontWeight.Normal,
         fontSize = 48.sp,
         lineHeight = 52.8.sp,
         letterSpacing = (-1).sp
     )
     val displayMD = TextStyle(
-        fontFamily = Geist,
+        fontFamily = GeistMono,
         fontWeight = FontWeight.Normal,
         fontSize = 36.sp,
         lineHeight = 41.4.sp,
         letterSpacing = (-0.5).sp
     )
     val displaySM = TextStyle(
-        fontFamily = Geist,
+        fontFamily = GeistMono,
         fontWeight = FontWeight.Normal,
         fontSize = 28.sp,
         lineHeight = 33.6.sp,
         letterSpacing = (-0.3).sp
     )
     val titleLG = TextStyle(
-        fontFamily = Geist,
+        fontFamily = GeistMono,
         fontWeight = FontWeight.Medium,
         fontSize = 22.sp,
         lineHeight = 28.6.sp,
         letterSpacing = 0.sp
     )
     val titleMD = TextStyle(
-        fontFamily = Geist,
+        fontFamily = GeistMono,
         fontWeight = FontWeight.Medium,
         fontSize = 18.sp,
         lineHeight = 25.2.sp,
         letterSpacing = 0.sp
     )
     val titleSM = TextStyle(
-        fontFamily = Geist,
+        fontFamily = GeistMono,
         fontWeight = FontWeight.Medium,
         fontSize = 16.sp,
         lineHeight = 22.4.sp,
@@ -107,14 +111,14 @@ object EasyPayTypography {
         letterSpacing = 0.sp
     )
     val button = TextStyle(
-        fontFamily = Geist,
+        fontFamily = GeistMono,
         fontWeight = FontWeight.Medium,
         fontSize = 14.sp,
         lineHeight = 14.sp,
         letterSpacing = 0.sp
     )
     val navLink = TextStyle(
-        fontFamily = Geist,
+        fontFamily = GeistMono,
         fontWeight = FontWeight.Medium,
         fontSize = 14.sp,
         lineHeight = 19.6.sp,

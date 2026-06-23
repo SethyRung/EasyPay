@@ -107,7 +107,7 @@ fun LoginScreen(
                 value = state.email,
                 onValueChange = { viewModel.onLoginEvent(LoginEvent.EmailChanged(it)) },
                 label = "Email",
-                placeholder = "Yourmail",
+                placeholder = "Your mail",
                 isError = state.emailError != null,
                 errorMessage = state.emailError,
                 keyboardOptions = KeyboardOptions(
