@@ -2,24 +2,31 @@ package com.sethy.easypay.design.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Bell
@@ -34,18 +41,21 @@ enum class BottomNavItem {
     Home, Calendar, Notifications, Profile
 }
 
-private val bottomNavItems = listOf(
-    BottomNavItem.Home to (Lucide.House to "Home"),
-    BottomNavItem.Calendar to (Lucide.Calendar to "Calendar"),
-    BottomNavItem.Notifications to (Lucide.Bell to "Alerts"),
-    BottomNavItem.Profile to (Lucide.User to "Profile")
+private data class BottomNavEntry(
+    val item: BottomNavItem,
+    val icon: ImageVector,
+    val label: String
 )
 
-private val BottomNavItem.icon: ImageVector
-    get() = bottomNavItems.first { it.first == this }.second.first
+private val bottomNavItems = listOf(
+    BottomNavEntry(BottomNavItem.Home, Lucide.House, "Home"),
+    BottomNavEntry(BottomNavItem.Calendar, Lucide.Calendar, "Calendar"),
+    BottomNavEntry(BottomNavItem.Notifications, Lucide.Bell, "Alerts"),
+    BottomNavEntry(BottomNavItem.Profile, Lucide.User, "Profile")
+)
 
-private val BottomNavItem.label: String
-    get() = bottomNavItems.first { it.first == this }.second.second
+private val ScanButtonSize = 56.dp
+private val ScanSpacerWidth = ScanButtonSize + EasyPaySpacing.md * 2
 
 @Composable
 fun BottomNav(
@@ -54,35 +64,52 @@ fun BottomNav(
     onScanClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Box(
-        modifier = modifier.fillMaxWidth(),
-        contentAlignment = Alignment.BottomCenter
-    ) {
-        NavigationBar(
-            containerColor = Canvas,
-            tonalElevation = 0.dp,
-            modifier = Modifier.height(EasyPayDimens.bottomNavHeight)
+    Box(modifier = modifier.fillMaxWidth()) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(EasyPayDimens.bottomNavHeight),
+            color = Canvas,
+            shadowElevation = 8.dp,
+            tonalElevation = 0.dp
         ) {
-            bottomNavItems.forEach { (item, _) ->
-                NavigationBarItem(
-                    selected = selectedItem == item,
-                    onClick = { onItemSelected(item) },
-                    icon = { Icon(imageVector = item.icon, contentDescription = item.label) },
-                    label = { Text(text = item.label, style = EasyPayTypography.caption) },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = Ink,
-                        selectedTextColor = Ink,
-                        indicatorColor = SurfaceCard,
-                        unselectedIconColor = Muted,
-                        unselectedTextColor = Muted
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = EasyPaySpacing.sm),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                bottomNavItems.take(2).forEach { entry ->
+                    BottomNavSlot(
+                        entry = entry,
+                        selected = selectedItem == entry.item,
+                        onClick = { onItemSelected(entry.item) },
+                        modifier = Modifier.weight(1f)
                     )
-                )
+                }
+                Spacer(modifier = Modifier.width(ScanSpacerWidth))
+                bottomNavItems.drop(2).forEach { entry ->
+                    BottomNavSlot(
+                        entry = entry,
+                        selected = selectedItem == entry.item,
+                        onClick = { onItemSelected(entry.item) },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
         }
+
         Box(
             modifier = Modifier
-                .padding(bottom = (EasyPayDimens.bottomNavHeight - 56.dp) / 2)
-                .size(56.dp)
+                .align(Alignment.TopCenter)
+                .offset(y = (-12).dp)
+                .size(ScanButtonSize)
+                .shadow(
+                    elevation = 12.dp,
+                    shape = CircleShape,
+                    ambientColor = SurfaceDark,
+                    spotColor = SurfaceDark
+                )
                 .clip(CircleShape)
                 .background(SurfaceDark)
                 .clickable(onClick = onScanClick),
@@ -93,6 +120,43 @@ fun BottomNav(
                 contentDescription = "Scan",
                 tint = OnDark,
                 modifier = Modifier.size(28.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun BottomNavSlot(
+    entry: BottomNavEntry,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val background = if (selected) SurfaceCard else Color.Transparent
+    Box(
+        modifier = modifier
+            .padding(vertical = EasyPaySpacing.sm, horizontal = EasyPaySpacing.xs)
+            .clip(RoundedCornerShape(EasyPayRadius.pill))
+            .background(background)
+            .clickable(onClick = onClick)
+            .padding(horizontal = EasyPaySpacing.sm, vertical = EasyPaySpacing.xs),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+            Icon(
+                imageVector = entry.icon,
+                contentDescription = entry.label,
+                tint = if (selected) Ink else Muted,
+                modifier = Modifier.size(24.dp)
+            )
+            Text(
+                text = entry.label,
+                style = EasyPayTypography.caption,
+                color = if (selected) Ink else Muted,
+                textAlign = TextAlign.Center
             )
         }
     }
