@@ -41,10 +41,8 @@ import com.composables.icons.lucide.LayoutGrid
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Tv
 import com.composables.icons.lucide.Zap
-import com.sethy.easypay.data.model.Transaction
 import com.sethy.easypay.design.AccentAmber
 import com.sethy.easypay.design.AccentTeal
-import com.sethy.easypay.design.Body
 import com.sethy.easypay.design.Canvas
 import com.sethy.easypay.design.EasyPaySpacing
 import com.sethy.easypay.design.EasyPayTheme
@@ -55,8 +53,6 @@ import com.sethy.easypay.design.OnDark
 import com.sethy.easypay.design.OnDarkSoft
 import com.sethy.easypay.design.Primary
 import com.sethy.easypay.design.components.BadgePill
-import com.sethy.easypay.design.components.BottomNav
-import com.sethy.easypay.design.components.BottomNavItem
 import com.sethy.easypay.design.components.ButtonSecondaryOnDark
 import com.sethy.easypay.design.components.CalloutCardCoral
 import com.sethy.easypay.design.components.ConnectorTile
@@ -73,9 +69,6 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     onNavigateToSendMoney: () -> Unit,
     onNavigateToTransactionDetail: (String) -> Unit,
-    onNavigateToNotifications: () -> Unit,
-    onNavigateToProfile: () -> Unit,
-    onNavigateToCalendar: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -85,9 +78,6 @@ fun HomeScreen(
             when (effect) {
                 HomeEffect.NavigateToSendMoney -> onNavigateToSendMoney()
                 is HomeEffect.NavigateToTransactionDetail -> onNavigateToTransactionDetail(effect.id)
-                HomeEffect.NavigateToNotifications -> onNavigateToNotifications()
-                HomeEffect.NavigateToProfile -> onNavigateToProfile()
-                HomeEffect.NavigateToCalendar -> onNavigateToCalendar()
             }
         }
     }
@@ -95,13 +85,6 @@ fun HomeScreen(
     Scaffold(
         modifier = modifier,
         topBar = { TopNav(title = "EasyPay") },
-        bottomBar = {
-            BottomNav(
-                selectedItem = BottomNavItem.Home,
-                onItemSelected = { viewModel.onEvent(HomeEvent.BottomNavSelected(it)) },
-                onScanClick = { /* TODO */ }
-            )
-        },
         containerColor = Canvas
     ) { padding ->
         LazyColumn(
@@ -285,10 +268,7 @@ private fun HomeScreenPreview() {
     EasyPayTheme {
         HomeScreen(
             onNavigateToSendMoney = {},
-            onNavigateToTransactionDetail = {},
-            onNavigateToNotifications = {},
-            onNavigateToProfile = {},
-            onNavigateToCalendar = {}
+            onNavigateToTransactionDetail = {}
         )
     }
 }

@@ -140,57 +140,6 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun BottomNavSelected_Home_does_nothing() = runTest {
-        val getBalance: GetBalanceUseCase = mock()
-        val getTransactions: GetTransactionsUseCase = mock()
-        whenever(getBalance()).thenReturn(Result.success(0.0))
-        whenever(getTransactions()).thenReturn(Result.success(emptyList()))
-
-        val vm = HomeViewModel(getBalance, getTransactions)
-        advanceUntilIdle()
-
-        vm.effect.test {
-            vm.onEvent(HomeEvent.BottomNavSelected(BottomNavItem.Home))
-            advanceUntilIdle()
-            expectNoEvents()
-        }
-    }
-
-    @Test
-    fun BottomNavSelected_Notifications_emits_NavigateToNotifications() = runTest {
-        val getBalance: GetBalanceUseCase = mock()
-        val getTransactions: GetTransactionsUseCase = mock()
-        whenever(getBalance()).thenReturn(Result.success(0.0))
-        whenever(getTransactions()).thenReturn(Result.success(emptyList()))
-
-        val vm = HomeViewModel(getBalance, getTransactions)
-        advanceUntilIdle()
-
-        vm.effect.test {
-            vm.onEvent(HomeEvent.BottomNavSelected(BottomNavItem.Notifications))
-            advanceUntilIdle()
-            assertEquals(HomeEffect.NavigateToNotifications, awaitItem())
-        }
-    }
-
-    @Test
-    fun BottomNavSelected_Profile_emits_NavigateToProfile() = runTest {
-        val getBalance: GetBalanceUseCase = mock()
-        val getTransactions: GetTransactionsUseCase = mock()
-        whenever(getBalance()).thenReturn(Result.success(0.0))
-        whenever(getTransactions()).thenReturn(Result.success(emptyList()))
-
-        val vm = HomeViewModel(getBalance, getTransactions)
-        advanceUntilIdle()
-
-        vm.effect.test {
-            vm.onEvent(HomeEvent.BottomNavSelected(BottomNavItem.Profile))
-            advanceUntilIdle()
-            assertEquals(HomeEffect.NavigateToProfile, awaitItem())
-        }
-    }
-
-    @Test
     fun DismissError_clears_errorMessage() = runTest {
         val getBalance: GetBalanceUseCase = mock()
         val getTransactions: GetTransactionsUseCase = mock()

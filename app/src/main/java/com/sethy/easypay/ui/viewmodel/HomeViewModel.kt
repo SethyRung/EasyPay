@@ -2,7 +2,6 @@ package com.sethy.easypay.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sethy.easypay.design.components.BottomNavItem
 import com.sethy.easypay.domain.usecase.GetBalanceUseCase
 import com.sethy.easypay.domain.usecase.GetTransactionsUseCase
 import com.sethy.easypay.ui.state.HomeEffect
@@ -44,22 +43,9 @@ class HomeViewModel @Inject constructor(
             is HomeEvent.TransactionClick -> viewModelScope.launch {
                 _effect.send(HomeEffect.NavigateToTransactionDetail(event.id))
             }
-            is HomeEvent.BottomNavSelected -> handleBottomNav(event.item)
             HomeEvent.DismissError -> {
                 _state.value = _state.value.copy(errorMessage = null)
             }
-        }
-    }
-
-    private fun handleBottomNav(item: BottomNavItem) {
-        viewModelScope.launch {
-            val effect = when (item) {
-                BottomNavItem.Home -> return@launch
-                BottomNavItem.Calendar -> HomeEffect.NavigateToCalendar
-                BottomNavItem.Notifications -> HomeEffect.NavigateToNotifications
-                BottomNavItem.Profile -> HomeEffect.NavigateToProfile
-            }
-            _effect.send(effect)
         }
     }
 
