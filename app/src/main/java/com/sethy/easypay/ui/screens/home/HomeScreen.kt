@@ -1,6 +1,8 @@
 package com.sethy.easypay.ui.screens.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,8 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -27,11 +28,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.composables.icons.lucide.ArrowDownToLine
 import com.composables.icons.lucide.Car
 import com.composables.icons.lucide.Droplet
 import com.composables.icons.lucide.Globe
@@ -39,23 +44,27 @@ import com.composables.icons.lucide.House
 import com.composables.icons.lucide.Landmark
 import com.composables.icons.lucide.LayoutGrid
 import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Plus
+import com.composables.icons.lucide.Send
 import com.composables.icons.lucide.Tv
 import com.composables.icons.lucide.Zap
 import com.sethy.easypay.design.AccentAmber
 import com.sethy.easypay.design.AccentTeal
 import com.sethy.easypay.design.Canvas
+import com.sethy.easypay.design.EasyPayRadius
 import com.sethy.easypay.design.EasyPaySpacing
 import com.sethy.easypay.design.EasyPayTheme
 import com.sethy.easypay.design.EasyPayTypography
+import com.sethy.easypay.design.Hairline
+import com.sethy.easypay.design.HairlineSoft
 import com.sethy.easypay.design.Ink
 import com.sethy.easypay.design.Muted
 import com.sethy.easypay.design.OnDark
 import com.sethy.easypay.design.OnDarkSoft
 import com.sethy.easypay.design.Primary
+import com.sethy.easypay.design.SurfaceDarkElevated
 import com.sethy.easypay.design.components.BadgePill
-import com.sethy.easypay.design.components.ButtonSecondaryOnDark
 import com.sethy.easypay.design.components.CalloutCardCoral
-import com.sethy.easypay.design.components.ConnectorTile
 import com.sethy.easypay.design.components.CountUpText
 import com.sethy.easypay.design.components.ProductMockupCardDark
 import com.sethy.easypay.design.components.TopNav
@@ -98,7 +107,7 @@ fun HomeScreen(
             item { BalanceHero(state.balance, viewModel::onEvent) }
             item { PromoCard() }
             item { BadgePill(text = "Quick Actions") }
-            item { QuickActionsGrid(viewModel::onEvent) }
+            item { QuickActionsGrid() }
             item {
                 Text(
                     text = "Recent transactions",
@@ -153,22 +162,62 @@ private fun BalanceHero(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(EasyPaySpacing.sm)
         ) {
-            ButtonSecondaryOnDark(
-                text = "Top up",
+            BalanceActionButton(
+                icon = Lucide.Plus,
+                label = "Top up",
                 onClick = { },
                 modifier = Modifier.weight(1f)
             )
-            ButtonSecondaryOnDark(
-                text = "Send",
+            BalanceActionButton(
+                icon = Lucide.Send,
+                label = "Send",
                 onClick = { onEvent(HomeEvent.SendMoneyClick) },
                 modifier = Modifier.weight(1f)
             )
-            ButtonSecondaryOnDark(
-                text = "Withdraw",
+            BalanceActionButton(
+                icon = Lucide.ArrowDownToLine,
+                label = "Withdraw",
                 onClick = { },
                 modifier = Modifier.weight(1f)
             )
         }
+    }
+}
+
+@Composable
+private fun BalanceActionButton(
+    icon: ImageVector,
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(EasyPayRadius.lg))
+            .background(SurfaceDarkElevated)
+            .border(1.dp, HairlineSoft, RoundedCornerShape(EasyPayRadius.lg))
+            .clickable(onClick = onClick)
+            .padding(vertical = EasyPaySpacing.md, horizontal = EasyPaySpacing.xs),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(
+            space = EasyPaySpacing.xs,
+            alignment = Alignment.CenterVertically
+        )
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = label,
+            tint = OnDark,
+            modifier = Modifier.size(18.dp)
+        )
+        Text(
+            text = label,
+            style = EasyPayTypography.bodySM,
+            color = OnDark,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center
+        )
     }
 }
 
@@ -186,79 +235,103 @@ private fun PromoCard() {
                 style = EasyPayTypography.bodyMD,
                 color = com.sethy.easypay.design.OnPrimary
             )
-            Button(
-                onClick = { },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Canvas,
-                    contentColor = Primary
-                ),
-                shape = MaterialTheme.shapes.medium
-            ) {
-                Text(
-                    text = "Send now",
-                    style = EasyPayTypography.button,
-                    fontWeight = FontWeight.Medium
-                )
-            }
+            Text(
+                text = "Send now →",
+                style = EasyPayTypography.button,
+                color = com.sethy.easypay.design.OnPrimary,
+                modifier = Modifier.clickable(onClick = { })
+            )
         }
     }
 }
 
 @Composable
-private fun QuickActionsGrid(onEvent: (HomeEvent) -> Unit) {
+private fun QuickActionsGrid() {
     val rows = listOf(
         listOf(
-            Triple(Lucide.Globe, "Internet", AccentTeal),
-            Triple(Lucide.Droplet, "Water", AccentAmber),
-            Triple(Lucide.Zap, "Electricity", com.sethy.easypay.design.Warning),
-            Triple(Lucide.Tv, "TV Cable", com.sethy.easypay.design.Success)
+            QuickAction(Lucide.Globe, "Internet", AccentTeal),
+            QuickAction(Lucide.Droplet, "Water", AccentAmber),
+            QuickAction(Lucide.Zap, "Power", com.sethy.easypay.design.Warning),
+            QuickAction(Lucide.Tv, "TV", com.sethy.easypay.design.Success)
         ),
         listOf(
-            Triple(Lucide.Car, "Vehicle", com.sethy.easypay.design.Error),
-            Triple(Lucide.House, "Rent", AccentTeal),
-            Triple(Lucide.Landmark, "Invest", AccentAmber),
-            Triple(Lucide.LayoutGrid, "More", Muted)
+            QuickAction(Lucide.Car, "Vehicle", com.sethy.easypay.design.Error),
+            QuickAction(Lucide.House, "Rent", AccentTeal),
+            QuickAction(Lucide.Landmark, "Invest", AccentAmber),
+            QuickAction(Lucide.LayoutGrid, "More", Muted)
         )
     )
 
     Column(
-        verticalArrangement = Arrangement.spacedBy(EasyPaySpacing.md),
+        verticalArrangement = Arrangement.spacedBy(EasyPaySpacing.sm),
         modifier = Modifier.fillMaxWidth()
     ) {
         rows.forEach { row ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(EasyPaySpacing.md)
+                horizontalArrangement = Arrangement.spacedBy(EasyPaySpacing.sm)
             ) {
-                row.forEach { (icon, label, tint) ->
-                    ConnectorTile(
-                        onClick = { },
+                row.forEach { action ->
+                    QuickActionTile(
+                        action = action,
                         modifier = Modifier.weight(1f)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(tint.copy(alpha = 0.12f)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = icon,
-                                contentDescription = label,
-                                tint = tint,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(EasyPaySpacing.sm))
-                        Text(
-                            text = label,
-                            style = EasyPayTypography.titleSM,
-                            color = Ink
-                        )
-                    }
+                    )
                 }
             }
         }
+    }
+}
+
+private data class QuickAction(
+    val icon: ImageVector,
+    val label: String,
+    val tint: Color
+)
+
+@Composable
+private fun QuickActionTile(
+    action: QuickAction,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(EasyPayRadius.lg))
+            .background(Canvas)
+            .border(1.dp, Hairline, RoundedCornerShape(EasyPayRadius.lg))
+            .clickable(onClick = { })
+            .padding(
+                vertical = EasyPaySpacing.md,
+                horizontal = EasyPaySpacing.xs
+            ),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(
+            space = EasyPaySpacing.sm,
+            alignment = Alignment.CenterVertically
+        )
+    ) {
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .clip(CircleShape)
+                .background(action.tint.copy(alpha = 0.12f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = action.icon,
+                contentDescription = action.label,
+                tint = action.tint,
+                modifier = Modifier.size(18.dp)
+            )
+        }
+        Text(
+            text = action.label,
+            style = EasyPayTypography.bodySM,
+            color = Ink,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
 

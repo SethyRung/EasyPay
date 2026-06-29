@@ -29,7 +29,7 @@ fun CalloutCardCoral(
         elevation = CardDefaults.cardElevation(0.dp)
     ) {
         Column(
-            modifier = Modifier.padding(EasyPaySpacing.xxl),
+            modifier = Modifier.padding(EasyPaySpacing.xl),
             content = content
         )
     }
