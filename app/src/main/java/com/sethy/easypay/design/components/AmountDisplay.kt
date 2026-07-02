@@ -9,17 +9,20 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import com.sethy.easypay.design.EasyPayTheme
 import com.sethy.easypay.design.EasyPayTypography
+import com.sethy.easypay.design.Ink
 
 @Composable
 fun AmountDisplay(
     amount: String,
     modifier: Modifier = Modifier,
     textStyle: TextStyle = EasyPayTypography.displayMD,
-    prefix: String = "$"
+    prefix: String = "$",
+    color: Color = Ink
 ) {
     AnimatedContent(
         targetState = amount,
@@ -41,7 +44,8 @@ fun AmountDisplay(
     ) { targetAmount ->
         Text(
             text = "$prefix$targetAmount",
-            style = textStyle
+            style = textStyle,
+            color = color
         )
     }
 }

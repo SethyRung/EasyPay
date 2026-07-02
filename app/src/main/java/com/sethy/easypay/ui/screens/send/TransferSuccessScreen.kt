@@ -2,7 +2,6 @@ package com.sethy.easypay.ui.screens.send
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,11 +18,11 @@ import com.sethy.easypay.design.Canvas
 import com.sethy.easypay.design.EasyPaySpacing
 import com.sethy.easypay.design.EasyPayTheme
 import com.sethy.easypay.design.EasyPayTypography
-import com.sethy.easypay.design.OnPrimary
+import com.sethy.easypay.design.Ink
+import com.sethy.easypay.design.Muted
 import com.sethy.easypay.design.components.AmountDisplay
 import com.sethy.easypay.design.components.ButtonPrimary
-import com.sethy.easypay.design.components.ButtonTextLink
-import com.sethy.easypay.design.components.CtaBandCoral
+import com.sethy.easypay.design.components.ButtonSecondary
 import com.sethy.easypay.design.components.PulsingCheckIcon
 
 @Composable
@@ -42,35 +41,40 @@ fun TransferSuccessScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = EasyPaySpacing.xl),
+                .padding(horizontal = EasyPaySpacing.xl, vertical = EasyPaySpacing.lg),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(EasyPaySpacing.lg, Alignment.CenterVertically)
+            verticalArrangement = Arrangement.spacedBy(
+                space = EasyPaySpacing.md,
+                alignment = Alignment.CenterVertically
+            )
         ) {
-            CtaBandCoral(modifier = Modifier.fillMaxWidth()) {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(EasyPaySpacing.md)
-                ) {
-                    PulsingCheckIcon()
-                    Text(
-                        text = "Transfer successful",
-                        style = EasyPayTypography.displaySM,
-                        color = OnPrimary,
-                        textAlign = TextAlign.Center
-                    )
-                    AmountDisplay(
-                        amount = String.format("%.2f", amount),
-                        textStyle = EasyPayTypography.displayMD,
-                        prefix = "$"
-                    )
-                    Text(
-                        text = "to $recipientName",
-                        style = EasyPayTypography.bodyMD,
-                        color = OnPrimary,
-                        textAlign = TextAlign.Center
-                    )
-                }
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(EasyPaySpacing.md)
+            ) {
+                PulsingCheckIcon(
+                    size = 96.dp,
+                    iconSize = 44.dp
+                )
+                Text(
+                    text = "Transfer successful",
+                    style = EasyPayTypography.titleLG,
+                    color = Ink,
+                    textAlign = TextAlign.Center
+                )
+                AmountDisplay(
+                    amount = String.format("%.2f", amount),
+                    textStyle = EasyPayTypography.displayMD,
+                    color = Ink,
+                    prefix = "$"
+                )
+                Text(
+                    text = "to $recipientName",
+                    style = EasyPayTypography.bodyMD,
+                    color = Muted,
+                    textAlign = TextAlign.Center
+                )
             }
 
             ButtonPrimary(
@@ -81,9 +85,12 @@ fun TransferSuccessScreen(
                     .height(56.dp)
             )
 
-            ButtonTextLink(
+            ButtonSecondary(
                 text = "Transfer more",
-                onClick = onTransferMore
+                onClick = onTransferMore,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
             )
         }
     }
