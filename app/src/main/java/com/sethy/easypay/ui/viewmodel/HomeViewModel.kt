@@ -2,6 +2,7 @@ package com.sethy.easypay.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sethy.easypay.data.model.FeaturedGame
 import com.sethy.easypay.domain.usecase.GetBalanceUseCase
 import com.sethy.easypay.domain.usecase.GetTransactionsUseCase
 import com.sethy.easypay.ui.state.HomeEffect
@@ -24,7 +25,9 @@ class HomeViewModel @Inject constructor(
     private val getTransactions: GetTransactionsUseCase
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(HomeUiState())
+    private val _state = MutableStateFlow(
+        HomeUiState(featuredGames = MockFeaturedGames.list)
+    )
     val state: StateFlow<HomeUiState> = _state.asStateFlow()
 
     private val _effect = Channel<HomeEffect>(Channel.BUFFERED)
@@ -37,6 +40,9 @@ class HomeViewModel @Inject constructor(
     fun onEvent(event: HomeEvent) {
         when (event) {
             HomeEvent.Refresh -> load()
+            HomeEvent.StoreClick -> viewModelScope.launch {
+                _effect.send(HomeEffect.NavigateToStore)
+            }
             HomeEvent.SendMoneyClick -> viewModelScope.launch {
                 _effect.send(HomeEffect.NavigateToSendMoney)
             }
@@ -73,4 +79,44 @@ class HomeViewModel @Inject constructor(
             )
         }
     }
+}
+
+private object MockFeaturedGames {
+    val list: List<FeaturedGame> = listOf(
+        FeaturedGame(
+            id = "elden_ring",
+            name = "Elden Ring",
+            priceMajor = 59.99,
+            category = "Action RPG",
+            coverColorHex = "#5A4A2E"
+        ),
+        FeaturedGame(
+            id = "hades",
+            name = "Hades",
+            priceMajor = 24.99,
+            category = "Roguelike",
+            coverColorHex = "#5C2E2E"
+        ),
+        FeaturedGame(
+            id = "hollow_knight",
+            name = "Hollow Knight",
+            priceMajor = 14.99,
+            category = "Metroidvania",
+            coverColorHex = "#2E4A5C"
+        ),
+        FeaturedGame(
+            id = "stardew_valley",
+            name = "Stardew Valley",
+            priceMajor = 14.99,
+            category = "Simulation",
+            coverColorHex = "#3E5C2E"
+        ),
+        FeaturedGame(
+            id = "cyberpunk_2077",
+            name = "Cyberpunk 2077",
+            priceMajor = 49.99,
+            category = "Action",
+            coverColorHex = "#5C2E4A"
+        )
+    )
 }

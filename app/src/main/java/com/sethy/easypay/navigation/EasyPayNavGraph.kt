@@ -37,7 +37,6 @@ import com.sethy.easypay.design.components.BottomNav
 import com.sethy.easypay.design.components.BottomNavItem
 import com.sethy.easypay.ui.screens.auth.LoginScreen
 import com.sethy.easypay.ui.screens.auth.SignupScreen
-import com.sethy.easypay.ui.screens.calendar.CalendarScreen
 import com.sethy.easypay.ui.screens.home.HomeScreen
 import com.sethy.easypay.ui.screens.notifications.NotificationsScreen
 import com.sethy.easypay.ui.screens.onboarding.OnboardingScreen
@@ -51,14 +50,12 @@ private const val SCALE_DURATION = 400
 
 private val MainTabRoutes = setOf(
     Route.Home.route,
-    Route.Calendar.route,
     Route.Notifications.route,
     Route.Profile.route
 )
 
 private fun routeToTab(route: String?): BottomNavItem? = when (route) {
     Route.Home.route -> BottomNavItem.Home
-    Route.Calendar.route -> BottomNavItem.Calendar
     Route.Notifications.route -> BottomNavItem.Notifications
     Route.Profile.route -> BottomNavItem.Profile
     else -> null
@@ -66,7 +63,7 @@ private fun routeToTab(route: String?): BottomNavItem? = when (route) {
 
 private fun tabToRoute(tab: BottomNavItem): String = when (tab) {
     BottomNavItem.Home -> Route.Home.route
-    BottomNavItem.Calendar -> Route.Calendar.route
+    BottomNavItem.Store -> Route.Home.route
     BottomNavItem.Notifications -> Route.Notifications.route
     BottomNavItem.Profile -> Route.Profile.route
 }
@@ -87,8 +84,7 @@ fun EasyPayNavGraph(
             if (showBottomBar && selectedTab != null) {
                 BottomNav(
                     selectedItem = selectedTab,
-                    onItemSelected = { tab -> navigateToTab(navController, tab) },
-                    onScanClick = { /* TODO: scan flow */ }
+                    onItemSelected = { tab -> navigateToTab(navController, tab) }
                 )
             }
         },
@@ -178,16 +174,6 @@ fun EasyPayNavGraph(
                         navController.navigate(Route.TransactionDetail.create(id))
                     }
                 )
-            }
-
-            composable(
-                route = Route.Calendar.route,
-                enterTransition = { slideLeftEnter() },
-                exitTransition = { slideLeftExit() },
-                popEnterTransition = { slideRightEnter() },
-                popExitTransition = { slideRightExit() }
-            ) {
-                CalendarScreen(onBackClick = { navController.popBackStack() })
             }
 
             composable(

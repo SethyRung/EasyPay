@@ -5,7 +5,6 @@ sealed class Route(val route: String) {
     data object Login : Route("login")
     data object Signup : Route("signup")
     data object Home : Route("home")
-    data object Calendar : Route("calendar")
     data object Notifications : Route("notifications")
     data object Profile : Route("profile")
 

@@ -123,6 +123,23 @@ class HomeViewModelTest {
     }
 
     @Test
+    fun StoreClick_emits_NavigateToStore() = runTest {
+        val getBalance: GetBalanceUseCase = mock()
+        val getTransactions: GetTransactionsUseCase = mock()
+        whenever(getBalance()).thenReturn(Result.success(0.0))
+        whenever(getTransactions()).thenReturn(Result.success(emptyList()))
+
+        val vm = HomeViewModel(getBalance, getTransactions)
+        advanceUntilIdle()
+
+        vm.effect.test {
+            vm.onEvent(HomeEvent.StoreClick)
+            advanceUntilIdle()
+            assertEquals(HomeEffect.NavigateToStore, awaitItem())
+        }
+    }
+
+    @Test
     fun TransactionClick_emits_NavigateToTransactionDetail() = runTest {
         val getBalance: GetBalanceUseCase = mock()
         val getTransactions: GetTransactionsUseCase = mock()

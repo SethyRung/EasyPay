@@ -9,12 +9,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
@@ -23,22 +19,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Bell
-import com.composables.icons.lucide.Calendar
 import com.composables.icons.lucide.House
 import com.composables.icons.lucide.Lucide
-import com.composables.icons.lucide.QrCode
+import com.composables.icons.lucide.ShoppingCart
 import com.composables.icons.lucide.User
 import com.sethy.easypay.design.*
 
 enum class BottomNavItem {
-    Home, Calendar, Notifications, Profile
+    Home, Store, Notifications, Profile
 }
 
 private data class BottomNavEntry(
@@ -49,78 +43,39 @@ private data class BottomNavEntry(
 
 private val bottomNavItems = listOf(
     BottomNavEntry(BottomNavItem.Home, Lucide.House, "Home"),
-    BottomNavEntry(BottomNavItem.Calendar, Lucide.Calendar, "Calendar"),
+    BottomNavEntry(BottomNavItem.Store, Lucide.ShoppingCart, "Store"),
     BottomNavEntry(BottomNavItem.Notifications, Lucide.Bell, "Alerts"),
     BottomNavEntry(BottomNavItem.Profile, Lucide.User, "Profile")
 )
-
-private val ScanButtonSize = 56.dp
-private val ScanSpacerWidth = ScanButtonSize + EasyPaySpacing.md * 2
 
 @Composable
 fun BottomNav(
     selectedItem: BottomNavItem,
     onItemSelected: (BottomNavItem) -> Unit,
-    onScanClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Box(modifier = modifier.fillMaxWidth()) {
-        Surface(
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(EasyPayDimens.bottomNavHeight),
+        color = Canvas,
+        shadowElevation = 8.dp,
+        tonalElevation = 0.dp
+    ) {
+        Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(EasyPayDimens.bottomNavHeight),
-            color = Canvas,
-            shadowElevation = 8.dp,
-            tonalElevation = 0.dp
+                .fillMaxSize()
+                .padding(horizontal = EasyPaySpacing.sm),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = EasyPaySpacing.sm),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                bottomNavItems.take(2).forEach { entry ->
-                    BottomNavSlot(
-                        entry = entry,
-                        selected = selectedItem == entry.item,
-                        onClick = { onItemSelected(entry.item) },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-                Spacer(modifier = Modifier.width(ScanSpacerWidth))
-                bottomNavItems.drop(2).forEach { entry ->
-                    BottomNavSlot(
-                        entry = entry,
-                        selected = selectedItem == entry.item,
-                        onClick = { onItemSelected(entry.item) },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
-        }
-
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .offset(y = (-12).dp)
-                .size(ScanButtonSize)
-                .shadow(
-                    elevation = 12.dp,
-                    shape = CircleShape,
-                    ambientColor = SurfaceDark,
-                    spotColor = SurfaceDark
+            bottomNavItems.forEach { entry ->
+                BottomNavSlot(
+                    entry = entry,
+                    selected = selectedItem == entry.item,
+                    onClick = { onItemSelected(entry.item) },
+                    modifier = Modifier.weight(1f)
                 )
-                .clip(CircleShape)
-                .background(SurfaceDark)
-                .clickable(onClick = onScanClick),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Lucide.QrCode,
-                contentDescription = "Scan",
-                tint = OnDark,
-                modifier = Modifier.size(28.dp)
-            )
+            }
         }
     }
 }
@@ -168,8 +123,7 @@ private fun BottomNavPreview() {
     EasyPayTheme {
         BottomNav(
             selectedItem = BottomNavItem.Home,
-            onItemSelected = {},
-            onScanClick = {}
+            onItemSelected = {}
         )
     }
 }
