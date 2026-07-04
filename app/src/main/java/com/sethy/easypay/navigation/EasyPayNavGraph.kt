@@ -40,6 +40,7 @@ import com.sethy.easypay.ui.screens.auth.SignupScreen
 import com.sethy.easypay.ui.screens.calendar.CalendarScreen
 import com.sethy.easypay.ui.screens.home.HomeScreen
 import com.sethy.easypay.ui.screens.notifications.NotificationsScreen
+import com.sethy.easypay.ui.screens.onboarding.OnboardingScreen
 import com.sethy.easypay.ui.screens.profile.ProfileScreen
 import com.sethy.easypay.ui.screens.send.SendMoneyScreen
 import com.sethy.easypay.ui.screens.send.TransferSuccessScreen
@@ -107,6 +108,27 @@ fun EasyPayNavGraph(
             popEnterTransition = { defaultPopEnter() },
             popExitTransition = { defaultPopExit() }
         ) {
+            composable(
+                route = Route.Onboarding.route,
+                enterTransition = { fadeIn(tween(SLIDE_DURATION)) },
+                exitTransition = { fadeOut(tween(SLIDE_DURATION)) },
+                popEnterTransition = { fadeIn(tween(SLIDE_DURATION)) },
+                popExitTransition = { fadeOut(tween(SLIDE_DURATION)) }
+            ) {
+                OnboardingScreen(
+                    onNavigateToLogin = {
+                        navController.navigate(Route.Login.route) {
+                            popUpTo(Route.Onboarding.route) { inclusive = true }
+                        }
+                    },
+                    onSignInClick = {
+                        navController.navigate(Route.Login.route) {
+                            popUpTo(Route.Onboarding.route) { inclusive = true }
+                        }
+                    }
+                )
+            }
+
             composable(
                 route = Route.Login.route,
                 enterTransition = { slideLeftEnter() },

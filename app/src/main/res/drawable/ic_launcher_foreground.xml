@@ -2,26 +2,16 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
-    android:viewportWidth="108"
-    android:viewportHeight="108">
-    <path
-        android:strokeColor="#FAF9F5"
-        android:strokeWidth="9"
-        android:strokeLineCap="round"
-        android:pathData="M61,54 L80,54" />
-    <path
-        android:strokeColor="#FAF9F5"
-        android:strokeWidth="9"
-        android:strokeLineCap="round"
-        android:pathData="M54,61 L54,80" />
-    <path
-        android:strokeColor="#FAF9F5"
-        android:strokeWidth="9"
-        android:strokeLineCap="round"
-        android:pathData="M47,54 L28,54" />
-    <path
-        android:strokeColor="#FAF9F5"
-        android:strokeWidth="9"
-        android:strokeLineCap="round"
-        android:pathData="M54,47 L54,28" />
+    android:viewportWidth="960"
+    android:viewportHeight="960">
+
+    <group
+        android:scaleX="0.6"
+        android:scaleY="0.6"
+        android:translateX="192"
+        android:translateY="192">
+        <path
+            android:fillColor="#CC785C"
+            android:pathData="M240,800 q-66,0 -113,-47 T80,640 v-320 q0,-66 47,-113 t113,-47 h480 q66,0 113,47 t47,113 v320 q0,66 -47,113 t-113,47 H240 Z m0,-480 h480 q22,0 42,5 t38,16 v-21 q0,-33 -23.5,-56.5 T720,240 H240 q-33,0 -56.5,23.5 T160,320 v21 q18,-11 38,-16 t42,5 Z m-74,130 l445,108 q9,2 18,0 t17,-8 l139,-116 q-11,-15 -28,-24.5 t-37,-9.5 H240 q-26,0 -45.5,13.5 T166,450 Z" />
+    </group>
 </vector>

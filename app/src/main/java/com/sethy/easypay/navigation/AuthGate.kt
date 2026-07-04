@@ -15,9 +15,12 @@ fun AuthGate(
     viewModel: AppSessionViewModel = hiltViewModel()
 ) {
     val isAuthenticated by viewModel.isAuthenticated.collectAsStateWithLifecycle()
+    val onboardingCompleted by viewModel.isOnboardingCompleted.collectAsStateWithLifecycle()
+    val showLoading = isAuthenticated == null || onboardingCompleted == null
+    val showOnboarding = !showLoading && onboardingCompleted == false
 
-    when (isAuthenticated) {
-        null -> {
+    when {
+        showLoading -> {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -25,7 +28,8 @@ fun AuthGate(
                 CircularProgressIndicator()
             }
         }
-        false -> EasyPayNavGraph(startDestination = Route.Login.route)
-        true -> EasyPayNavGraph(startDestination = Route.Home.route)
+        showOnboarding -> EasyPayNavGraph(startDestination = Route.Onboarding.route)
+        isAuthenticated == false -> EasyPayNavGraph(startDestination = Route.Login.route)
+        else -> EasyPayNavGraph(startDestination = Route.Home.route)
     }
 }

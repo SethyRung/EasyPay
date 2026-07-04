@@ -1,6 +1,7 @@
 package com.sethy.easypay.navigation
 
 sealed class Route(val route: String) {
+    data object Onboarding : Route("onboarding")
     data object Login : Route("login")
     data object Signup : Route("signup")
     data object Home : Route("home")
