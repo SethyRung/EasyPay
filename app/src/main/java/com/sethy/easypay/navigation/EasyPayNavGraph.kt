@@ -45,6 +45,7 @@ import com.sethy.easypay.ui.screens.profile.ProfileScreen
 import com.sethy.easypay.ui.screens.send.SendMoneyScreen
 import com.sethy.easypay.ui.screens.send.TransferSuccessScreen
 import com.sethy.easypay.ui.screens.transactions.TransactionDetailScreen
+import com.sethy.easypay.ui.screens.wallet.TopUpScreen
 
 private const val SLIDE_DURATION = 250
 private const val SCALE_DURATION = 400
@@ -178,6 +179,9 @@ fun EasyPayNavGraph(
                     },
                     onNavigateToStore = {
                         navController.navigate(Route.Store.route)
+                    },
+                    onNavigateToTopUp = {
+                        navController.navigate(Route.TopUp.route)
                     }
                 )
             }
@@ -190,7 +194,23 @@ fun EasyPayNavGraph(
                 popExitTransition = { slideDownExit() }
             ) {
                 BridgeStoreScreen(
-                    onBackClick = { navController.popBackStack() }
+                    onBackClick = { navController.popBackStack() },
+                    onNavigateToTopUp = {
+                        navController.navigate(Route.TopUp.route)
+                    }
+                )
+            }
+
+            composable(
+                route = Route.TopUp.route,
+                enterTransition = { slideUpEnter() },
+                exitTransition = { slideDownExit() },
+                popEnterTransition = { slideUpEnter() },
+                popExitTransition = { slideDownExit() }
+            ) {
+                TopUpScreen(
+                    onBackClick = { navController.popBackStack() },
+                    onDone = { navController.popBackStack() }
                 )
             }
 

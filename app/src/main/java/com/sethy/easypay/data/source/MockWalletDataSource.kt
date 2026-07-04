@@ -88,6 +88,60 @@ class MockWalletDataSource @Inject constructor(
         return Result.success(transaction)
     }
 
+    override suspend fun payBill(
+        billerCode: String,
+        accountNumber: String,
+        amountMinor: Long,
+        note: String?
+    ): Result<BillPayment> {
+        ensureLoaded()
+        val amount = amountMinor / 100.0
+        if (amount > balance) {
+            return Result.failure(IllegalStateException("Insufficient balance"))
+        }
+        balance -= amount
+        val transaction = Transaction(
+            id = UUID.randomUUID().toString(),
+            recipientName = note ?: billerCode,
+            amount = amount,
+            type = TransactionType.SENT,
+            description = "Bill payment to $billerCode ($accountNumber)",
+            status = TransactionStatus.COMPLETED
+        )
+        transactions = listOf(transaction) + transactions
+        return Result.success(
+            BillPayment(
+                transactionId = transaction.id,
+                walletId = "mock-wallet",
+                balanceAfterMinor = (balance * 100).toLong(),
+                amountMinor = amountMinor
+            )
+        )
+    }
+
+    override suspend fun topUp(amountMinor: Long, note: String?): Result<TopUp> {
+        ensureLoaded()
+        val amount = amountMinor / 100.0
+        balance += amount
+        val transaction = Transaction(
+            id = UUID.randomUUID().toString(),
+            recipientName = "Top up",
+            amount = amount,
+            type = TransactionType.RECEIVED,
+            description = note ?: "Top up",
+            status = TransactionStatus.COMPLETED
+        )
+        transactions = listOf(transaction) + transactions
+        return Result.success(
+            TopUp(
+                transactionId = transaction.id,
+                walletId = "mock-wallet",
+                balanceAfterMinor = (balance * 100).toLong(),
+                amountMinor = amountMinor
+            )
+        )
+    }
+
     override suspend fun getNotifications(): Result<List<Notification>> {
         ensureLoaded()
         return Result.success(notifications)

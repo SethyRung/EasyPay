@@ -2,6 +2,8 @@ package com.sethy.easypay.data.repository
 
 import com.sethy.easypay.data.model.Transaction
 import com.sethy.easypay.data.model.User
+import com.sethy.easypay.data.source.BillPayment
+import com.sethy.easypay.data.source.TopUp
 import com.sethy.easypay.data.source.WalletDataSource
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -27,4 +29,14 @@ class DefaultWalletRepository @Inject constructor(
         val amountMinor = (amount * 100).toLong()
         return walletDataSource.sendMoney(recipient, amountMinor)
     }
+
+    override suspend fun payBill(
+        billerCode: String,
+        accountNumber: String,
+        amountMinor: Long,
+        note: String?
+    ): Result<BillPayment> = walletDataSource.payBill(billerCode, accountNumber, amountMinor, note)
+
+    override suspend fun topUp(amountMinor: Long, note: String?): Result<TopUp> =
+        walletDataSource.topUp(amountMinor, note)
 }

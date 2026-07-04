@@ -54,6 +54,7 @@ fun HomeScreen(
     onNavigateToSendMoney: () -> Unit,
     onNavigateToTransactionDetail: (String) -> Unit,
     onNavigateToStore: () -> Unit = {},
+    onNavigateToTopUp: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -109,7 +110,7 @@ fun HomeScreen(
                 QuickActionsRow(
                     onStoreClick = { viewModel.onEvent(HomeEvent.StoreClick) },
                     onSendClick = { viewModel.onEvent(HomeEvent.SendMoneyClick) },
-                    onTopUpClick = { /* TODO: top up — Phase 4 */ }
+                    onTopUpClick = onNavigateToTopUp
                 )
             }
             if (state.featuredGames.isNotEmpty()) {

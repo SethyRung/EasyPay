@@ -40,3 +40,21 @@ data class BridgeBalance(
     val balanceMinor: Long,
     val balance: Double
 )
+
+data class BridgePaymentItem(
+    val gameId: String,
+    val name: String,
+    val imageUrl: String?,
+    val quantity: Int,
+    val priceMajor: Double
+)
+
+data class BridgePaymentRequest(
+    val merchantRef: String,
+    val billerCode: String,
+    val accountNumber: String,
+    val amountMajor: Double,
+    val currency: String,
+    val note: String,
+    val items: List<BridgePaymentItem>
+)

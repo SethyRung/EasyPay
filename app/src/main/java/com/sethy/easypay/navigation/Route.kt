@@ -8,6 +8,7 @@ sealed class Route(val route: String) {
     data object Notifications : Route("notifications")
     data object Profile : Route("profile")
     data object Store : Route("store")
+    data object TopUp : Route("topUp")
 
     data object SendMoney : Route("sendMoney?recipientName={recipientName}") {
         fun create(recipientName: String = "Nayantara V") =

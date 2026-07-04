@@ -2,9 +2,13 @@ package com.sethy.easypay.data.source
 
 import com.sethy.easypay.data.api.NotificationApi
 import com.sethy.easypay.data.api.WalletApi
+import com.sethy.easypay.data.dto.BillPaymentRequest
 import com.sethy.easypay.data.dto.SendMoneyRequest
+import com.sethy.easypay.data.dto.TopUpRequest
 import com.sethy.easypay.data.mapper.toBalance
+import com.sethy.easypay.data.mapper.toBillPayment
 import com.sethy.easypay.data.mapper.toNotification
+import com.sethy.easypay.data.mapper.toTopUp
 import com.sethy.easypay.data.mapper.toTransaction
 import com.sethy.easypay.data.model.Notification
 import com.sethy.easypay.data.model.Transaction
@@ -40,6 +44,19 @@ class RemoteWalletDataSource @Inject constructor(
     override suspend fun sendMoney(recipient: String, amountMinor: Long): Result<Transaction> = safeApiCall {
         walletApi.sendMoney(SendMoneyRequest(recipient, amountMinor))
     }.map { it.toTransaction() }
+
+    override suspend fun payBill(
+        billerCode: String,
+        accountNumber: String,
+        amountMinor: Long,
+        note: String?
+    ): Result<BillPayment> = safeApiCall {
+        walletApi.payBill(BillPaymentRequest(billerCode, accountNumber, amountMinor, note))
+    }.map { it.toBillPayment() }
+
+    override suspend fun topUp(amountMinor: Long, note: String?): Result<TopUp> = safeApiCall {
+        walletApi.topUp(TopUpRequest(amountMinor, note))
+    }.map { it.toTopUp() }
 
     override suspend fun getNotifications(): Result<List<Notification>> = safeApiCall {
         notificationApi.getNotifications()

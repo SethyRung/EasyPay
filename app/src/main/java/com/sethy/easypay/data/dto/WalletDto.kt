@@ -33,3 +33,33 @@ data class SendMoneyRequest(
     val recipient: String,
     val amountMinor: Long
 )
+
+@Serializable
+data class BillPaymentRequest(
+    val billerCode: String,
+    val accountNumber: String,
+    val amountMinor: Long,
+    val note: String? = null
+)
+
+@Serializable
+data class BillPaymentResponse(
+    val transactionId: String,
+    val walletId: String,
+    val balanceAfterMinor: Long,
+    val amountMinor: Long
+)
+
+@Serializable
+data class TopUpRequest(
+    val amountMinor: Long,
+    val note: String? = null
+)
+
+@Serializable
+data class TopUpResponse(
+    val transactionId: String,
+    val walletId: String,
+    val balanceAfterMinor: Long,
+    val amountMinor: Long
+)

@@ -13,11 +13,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,6 +42,7 @@ import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.TriangleAlert
 import com.sethy.easypay.bridge.BridgeController
 import com.sethy.easypay.bridge.BridgeStatus
+import com.sethy.easypay.bridge.PaymentSheetState
 import com.sethy.easypay.design.Canvas
 import com.sethy.easypay.design.EasyPayRadius
 import com.sethy.easypay.design.EasyPaySpacing
@@ -53,16 +58,19 @@ import com.sethy.easypay.ui.viewmodel.BridgeStoreViewModel
 
 private const val DEFAULT_STORE_URL = "http://10.0.2.2:3000/"
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BridgeStoreScreen(
     viewModel: BridgeStoreViewModel = hiltViewModel(),
     onBackClick: () -> Unit,
+    onNavigateToTopUp: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val status by viewModel.status.collectAsStateWithLifecycle()
     val storeUrl by viewModel.storeUrl.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
+    val paymentSheetState by viewModel.paymentSheetState.collectAsStateWithLifecycle()
 
     androidx.compose.foundation.layout.Column(modifier = modifier.fillMaxSize()) {
         TopNav(
@@ -123,6 +131,31 @@ fun BridgeStoreScreen(
                     )
                 }
             }
+        }
+    }
+
+    if (paymentSheetState !is PaymentSheetState.Hidden) {
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        LaunchedEffect(paymentSheetState) {
+            // Reset dismiss-allowed state whenever the sheet content changes
+            sheetState.show()
+        }
+        ModalBottomSheet(
+            onDismissRequest = { viewModel.onPaymentSheetDismissed() },
+            sheetState = sheetState,
+            containerColor = Canvas
+        ) {
+            PaymentSheetContent(
+                state = paymentSheetState,
+                onConfirm = { viewModel.confirmPayment() },
+                onCancel = { viewModel.declinePayment() },
+                onTopUp = {
+                    viewModel.dismissPaymentSheet()
+                    onNavigateToTopUp()
+                },
+                onRetry = { viewModel.confirmPayment() },
+                onDismiss = { viewModel.onPaymentSheetDismissed() }
+            )
         }
     }
 }

@@ -4,6 +4,8 @@ import android.webkit.WebView
 import com.sethy.easypay.data.model.User
 import com.sethy.easypay.domain.usecase.GetBalanceUseCase
 import com.sethy.easypay.domain.usecase.GetCurrentUserUseCase
+import com.sethy.easypay.domain.usecase.PayBillUseCase
+import com.sethy.easypay.domain.usecase.TopUpUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -14,6 +16,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import org.json.JSONArray
+import org.json.JSONObject
 import top.sunhy.component.jsbridge.IBridgeHandler
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -22,6 +26,8 @@ import javax.inject.Singleton
 class BridgeController @Inject constructor(
     private val getCurrentUser: GetCurrentUserUseCase,
     private val getBalance: GetBalanceUseCase,
+    private val payBill: PayBillUseCase,
+    val topUp: TopUpUseCase,
     private val handlerFactory: BridgeHandlerFactory
 ) {
 
@@ -33,7 +39,14 @@ class BridgeController @Inject constructor(
     private val _events = MutableSharedFlow<BridgeEvent>(extraBufferCapacity = 64)
     val events: SharedFlow<BridgeEvent> = _events.asSharedFlow()
 
+    private val _pendingPayment = MutableStateFlow<BridgePaymentRequest?>(null)
+    val pendingPayment: StateFlow<BridgePaymentRequest?> = _pendingPayment.asStateFlow()
+
+    private val _paymentSheetState = MutableStateFlow<PaymentSheetState>(PaymentSheetState.Hidden)
+    val paymentSheetState: StateFlow<PaymentSheetState> = _paymentSheetState.asStateFlow()
+
     private var handler: IBridgeHandler? = null
+    private var pendingPaymentCallback: ((String) -> Unit)? = null
 
     fun attach(webView: WebView) {
         if (handler != null) return
@@ -74,6 +87,19 @@ class BridgeController @Inject constructor(
             }
         }
 
+        bridge.registerBridger(REQUEST_PAYMENT) { data, callback ->
+            record(BridgeEvent.Received(REQUEST_PAYMENT, data))
+            val request = parsePaymentRequest(data)
+            if (request == null) {
+                callback?.invoke(failurePayload(REQUEST_PAYMENT, "INVALID", "Bad payload"))
+                record(BridgeEvent.Failed(REQUEST_PAYMENT, "Invalid payload"))
+                return@registerBridger
+            }
+            pendingPaymentCallback = callback
+            _pendingPayment.value = request
+            _paymentSheetState.value = PaymentSheetState.Confirming(request)
+        }
+
         bridge.registerBridger(SHOW_TOAST) { data, callback ->
             record(BridgeEvent.Received(SHOW_TOAST, data))
             callback?.invoke("""{"ok":true}""")
@@ -91,10 +117,71 @@ class BridgeController @Inject constructor(
         handler?.detach()
         handler = null
         _status.value = BridgeStatus.Initializing
+        clearPendingPayment()
     }
 
     fun markOffline(reason: String) {
         _status.value = BridgeStatus.Offline(reason)
+    }
+
+    fun confirmPayment() {
+        val request = _pendingPayment.value
+        val callback = pendingPaymentCallback
+        if (request == null || callback == null) {
+            clearPendingPayment()
+            return
+        }
+        _paymentSheetState.value = PaymentSheetState.Processing(request)
+
+        scope.launch {
+            val result = payBill(
+                billerCode = request.billerCode,
+                accountNumber = request.accountNumber,
+                amountMajor = request.amountMajor,
+                note = request.note
+            )
+            result.fold(
+                onSuccess = { payment ->
+                    val payload = encodePaymentSuccess(request, payment.balanceAfterMinor, payment.transactionId)
+                    record(BridgeEvent.Replied(REQUEST_PAYMENT, true))
+                    callback(payload)
+                    _paymentSheetState.value = PaymentSheetState.Success(request)
+                },
+                onFailure = { e ->
+                    val (code, _) = classifyPaymentFailure(e)
+                    if (code == "INSUFFICIENT_FUNDS") {
+                        _paymentSheetState.value = PaymentSheetState.InsufficientFunds(request)
+                    } else {
+                        _paymentSheetState.value = PaymentSheetState.Error(request, e.message ?: "Unknown")
+                    }
+                    val payload = failurePayload(REQUEST_PAYMENT, code, e.message)
+                    record(BridgeEvent.Failed(REQUEST_PAYMENT, e.message ?: "Unknown"))
+                    callback(payload)
+                }
+            )
+        }
+    }
+
+    fun declinePayment(code: String = "USER_CANCELLED", message: String = "Cancelled by user") {
+        val request = _pendingPayment.value
+        val callback = pendingPaymentCallback
+        if (callback != null) {
+            callback(failurePayload(REQUEST_PAYMENT, code, message))
+            record(BridgeEvent.Failed(REQUEST_PAYMENT, message))
+        }
+        clearPendingPayment()
+        _paymentSheetState.value = PaymentSheetState.Hidden
+    }
+
+    fun dismissPaymentSheet() {
+        if (_pendingPayment.value == null) {
+            _paymentSheetState.value = PaymentSheetState.Hidden
+        }
+    }
+
+    private fun clearPendingPayment() {
+        pendingPaymentCallback = null
+        _pendingPayment.value = null
     }
 
     private fun record(event: BridgeEvent) {
@@ -106,12 +193,76 @@ class BridgeController @Inject constructor(
 
     private fun encodeBridgeBalance(balance: Double): String {
         val minor = (balance * 100).toLong()
-        return """{"currency":"USD","balanceMinor":$minor,"balance":${balance}}"""
+        return """{"currency":"USD","balanceMinor":$minor,"balance":$balance}"""
+    }
+
+    private fun encodePaymentSuccess(
+        request: BridgePaymentRequest,
+        balanceAfterMinor: Long,
+        transactionId: String
+    ): String {
+        val amountMinor = (request.amountMajor * 100).toLong()
+        return buildString {
+            append('{')
+            append(""""ok":true,""")
+            append(""""merchantRef":"${escape(request.merchantRef)}",""")
+            append(""""transactionId":"${escape(transactionId)}",""")
+            append(""""amountMinor":$amountMinor,""")
+            append(""""balanceAfterMinor":$balanceAfterMinor""")
+            append('}')
+        }
     }
 
     private fun failurePayload(method: String, code: String, message: String?): String {
         val safe = message?.let { escape(it) } ?: "Unknown error"
         return """{"ok":false,"error":{"code":"$code","message":"$safe"}}"""
+    }
+
+    private fun classifyPaymentFailure(error: Throwable): Pair<String, String> {
+        val message = error.message.orEmpty()
+        return when {
+            message.contains("Insufficient", ignoreCase = true) -> "INSUFFICIENT_FUNDS" to message
+            else -> "NETWORK" to message
+        }
+    }
+
+    private fun parsePaymentRequest(raw: String?): BridgePaymentRequest? {
+        val payload = raw?.takeIf { it.isNotBlank() } ?: return null
+        return runCatching {
+            val json = JSONObject(payload)
+            val merchantRef = json.optString("merchantRef").takeIf { it.isNotBlank() } ?: return@runCatching null
+            val billerCode = json.optString("billerCode", "glitch").ifBlank { "glitch" }
+            val accountNumber = json.optString("accountNumber")
+            val amountMajor = json.optDouble("amount", 0.0)
+            val currency = json.optString("currency", "USD").ifBlank { "USD" }
+            val note = json.optString("note", merchantRef)
+            val itemsArray = json.optJSONArray("items")
+            val items = if (itemsArray != null) parsePaymentItems(itemsArray) else emptyList()
+            BridgePaymentRequest(
+                merchantRef = merchantRef,
+                billerCode = billerCode,
+                accountNumber = accountNumber,
+                amountMajor = amountMajor,
+                currency = currency,
+                note = note,
+                items = items
+            )
+        }.getOrNull()
+    }
+
+    private fun parsePaymentItems(array: JSONArray): List<BridgePaymentItem> = buildList {
+        for (i in 0 until array.length()) {
+            val obj = array.optJSONObject(i) ?: continue
+            add(
+                BridgePaymentItem(
+                    gameId = obj.optString("gameId"),
+                    name = obj.optString("name"),
+                    imageUrl = obj.optString("imageUrl").takeIf { it.isNotBlank() },
+                    quantity = obj.optInt("quantity", 1),
+                    priceMajor = obj.optDouble("price", 0.0)
+                )
+            )
+        }
     }
 
     private fun escape(value: String): String =
@@ -126,4 +277,13 @@ class BridgeController @Inject constructor(
         const val SHOW_TOAST = "wallet.showToast"
         const val CLOSE = "wallet.close"
     }
+}
+
+sealed interface PaymentSheetState {
+    data object Hidden : PaymentSheetState
+    data class Confirming(val request: BridgePaymentRequest) : PaymentSheetState
+    data class Processing(val request: BridgePaymentRequest) : PaymentSheetState
+    data class Success(val request: BridgePaymentRequest) : PaymentSheetState
+    data class InsufficientFunds(val request: BridgePaymentRequest) : PaymentSheetState
+    data class Error(val request: BridgePaymentRequest, val message: String) : PaymentSheetState
 }
