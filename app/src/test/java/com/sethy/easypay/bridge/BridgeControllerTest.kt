@@ -87,4 +87,33 @@ class BridgeControllerTest {
         assertEquals(null, controller.pendingPayment.value)
         assertEquals(PaymentSheetState.Hidden, controller.paymentSheetState.value)
     }
+
+    @Test
+    fun eventLog_starts_empty() = runTest {
+        val controller = createController()
+        assertEquals(0, controller.eventLog.value.size)
+        assertEquals(null, controller.sessionStartedAt.value)
+    }
+
+    @Test
+    fun eventLog_remains_empty_when_handler_not_invoked() = runTest {
+        // The handler isn't fired just by attach() — only when web actually calls the bridge.
+        val handler: IBridgeHandler = mock()
+        val controller = createController(handler)
+        controller.attach(mock())
+        assertEquals(0, controller.eventLog.value.size)
+        assertEquals(BridgeStatus.Online, controller.status.value)
+    }
+
+    @Test
+    fun detach_clears_event_log_and_session_timestamp() = runTest {
+        val handler: IBridgeHandler = mock()
+        val controller = createController(handler)
+        controller.attach(mock())
+        // simulate that something was recorded
+        controller.markOffline("manual")
+        controller.detach()
+        assertEquals(0, controller.eventLog.value.size)
+        assertEquals(null, controller.sessionStartedAt.value)
+    }
 }

@@ -37,6 +37,7 @@ import com.sethy.easypay.design.components.BottomNav
 import com.sethy.easypay.design.components.BottomNavItem
 import com.sethy.easypay.ui.screens.auth.LoginScreen
 import com.sethy.easypay.ui.screens.auth.SignupScreen
+import com.sethy.easypay.ui.screens.bridge.BridgeEventLogScreen
 import com.sethy.easypay.ui.screens.bridge.BridgeStoreScreen
 import com.sethy.easypay.ui.screens.home.HomeScreen
 import com.sethy.easypay.ui.screens.notifications.NotificationsScreen
@@ -215,6 +216,18 @@ fun EasyPayNavGraph(
             }
 
             composable(
+                route = Route.BridgeEventLog.route,
+                enterTransition = { slideLeftEnter() },
+                exitTransition = { slideLeftExit() },
+                popEnterTransition = { slideRightEnter() },
+                popExitTransition = { slideRightExit() }
+            ) {
+                BridgeEventLogScreen(
+                    onBackClick = { navController.popBackStack() }
+                )
+            }
+
+            composable(
                 route = Route.Notifications.route,
                 enterTransition = { slideLeftEnter() },
                 exitTransition = { slideLeftExit() },
@@ -236,6 +249,9 @@ fun EasyPayNavGraph(
                         navController.navigate(Route.Login.route) {
                             popUpTo(Route.Home.route) { inclusive = true }
                         }
+                    },
+                    onNavigateToBridgeEventLog = {
+                        navController.navigate(Route.BridgeEventLog.route)
                     },
                     onBackClick = { navController.popBackStack() }
                 )

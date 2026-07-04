@@ -1,9 +1,11 @@
 package com.sethy.easypay.ui.screens.profile
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,13 +14,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -27,37 +32,50 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.composables.icons.lucide.ChevronRight
+import com.composables.icons.lucide.Lucide
+import com.sethy.easypay.bridge.BridgeStatus
 import com.sethy.easypay.data.model.User
 import com.sethy.easypay.design.Body
 import com.sethy.easypay.design.Canvas
+import com.sethy.easypay.design.EasyPayRadius
 import com.sethy.easypay.design.EasyPaySpacing
 import com.sethy.easypay.design.EasyPayTheme
 import com.sethy.easypay.design.EasyPayTypography
 import com.sethy.easypay.design.Error
+import com.sethy.easypay.design.Hairline
 import com.sethy.easypay.design.Ink
 import com.sethy.easypay.design.Muted
+import com.sethy.easypay.design.OnDark
+import com.sethy.easypay.design.Primary
+import com.sethy.easypay.design.Success
 import com.sethy.easypay.design.SurfaceCard
 import com.sethy.easypay.design.components.ButtonSecondary
 import com.sethy.easypay.design.components.ProfileInfoCard
 import com.sethy.easypay.design.components.TopNav
 import com.sethy.easypay.ui.state.ProfileEffect
 import com.sethy.easypay.ui.state.ProfileEvent
+import com.sethy.easypay.ui.viewmodel.BridgeSessionViewModel
 import com.sethy.easypay.ui.viewmodel.ProfileViewModel
 
 @Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
+    bridgeSessionViewModel: BridgeSessionViewModel = hiltViewModel(),
     onNavigateToLogin: () -> Unit,
+    onNavigateToBridgeEventLog: () -> Unit = {},
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val currentState = state
+    val bridgeSession by bridgeSessionViewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
@@ -102,6 +120,8 @@ fun ProfileScreen(
                     ProfileContent(
                         user = currentState.user,
                         viewModel = viewModel,
+                        bridgeSession = bridgeSession,
+                        onNavigateToBridgeEventLog = onNavigateToBridgeEventLog,
                         errorMessage = currentState.errorMessage
                     )
                 }
@@ -133,6 +153,8 @@ fun ProfileScreen(
 private fun ProfileContent(
     user: User,
     viewModel: ProfileViewModel,
+    bridgeSession: com.sethy.easypay.ui.viewmodel.BridgeSessionUiState,
+    onNavigateToBridgeEventLog: () -> Unit,
     errorMessage: String?
 ) {
     Spacer(modifier = Modifier.height(EasyPaySpacing.md))
@@ -166,6 +188,11 @@ private fun ProfileContent(
         InfoRow(label = "Account ID", value = user.id)
         InfoRow(label = "Currency", value = "USD")
     }
+
+    BridgeSessionCard(
+        state = bridgeSession,
+        onViewLog = onNavigateToBridgeEventLog
+    )
 
     if (!errorMessage.isNullOrBlank()) {
         Text(
@@ -203,6 +230,114 @@ private fun ProfileContent(
     }
 
     Spacer(modifier = Modifier.height(EasyPaySpacing.lg))
+}
+
+@Composable
+private fun BridgeSessionCard(
+    state: com.sethy.easypay.ui.viewmodel.BridgeSessionUiState,
+    onViewLog: () -> Unit
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = "Bridge session",
+            style = EasyPayTypography.captionUppercase,
+            color = Muted,
+            modifier = Modifier.padding(start = EasyPaySpacing.xs)
+        )
+        Spacer(modifier = Modifier.height(EasyPaySpacing.xs))
+
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(EasyPayRadius.lg),
+            border = androidx.compose.foundation.BorderStroke(1.dp, Hairline),
+            color = Canvas
+        ) {
+            Column(modifier = Modifier.padding(EasyPaySpacing.md)) {
+                SessionInfoRow(
+                    label = "Connected merchant",
+                    value = state.merchant,
+                    valueColor = if (state.isActive) Success else Muted
+                )
+                Spacer(modifier = Modifier.height(EasyPaySpacing.sm))
+                SessionInfoRow(
+                    label = "Session started",
+                    value = formatSessionAge(state.sessionStartedAtMillis)
+                )
+                Spacer(modifier = Modifier.height(EasyPaySpacing.sm))
+                SessionInfoRow(
+                    label = "Events",
+                    value = state.eventCount.toString()
+                )
+
+                Spacer(modifier = Modifier.height(EasyPaySpacing.md))
+
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(EasyPayRadius.md))
+                        .clickable(enabled = state.eventCount > 0, onClick = onViewLog),
+                    color = if (state.eventCount > 0) Primary.copy(alpha = 0.08f) else Canvas,
+                    shape = RoundedCornerShape(EasyPayRadius.md),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, Hairline)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(EasyPaySpacing.md),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = if (state.eventCount > 0) "View bridge event log" else "No events yet",
+                            style = EasyPayTypography.bodyMD.copy(
+                                fontWeight = if (state.eventCount > 0) FontWeight.Medium else FontWeight.Normal
+                            ),
+                            color = if (state.eventCount > 0) Primary else Muted
+                        )
+                        if (state.eventCount > 0) {
+                            Icon(
+                                imageVector = Lucide.ChevronRight,
+                                contentDescription = null,
+                                tint = Primary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SessionInfoRow(label: String, value: String, valueColor: androidx.compose.ui.graphics.Color = Ink) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = label,
+            style = EasyPayTypography.caption,
+            color = Muted
+        )
+        Text(
+            text = value,
+            style = EasyPayTypography.bodyMD.copy(fontWeight = FontWeight.Medium),
+            color = valueColor
+        )
+    }
+}
+
+private fun formatSessionAge(startedAtMillis: Long?): String {
+    if (startedAtMillis == null) return "—"
+    val diffMs = (System.currentTimeMillis() - startedAtMillis).coerceAtLeast(0)
+    val totalSeconds = diffMs / 1000
+    val minutes = totalSeconds / 60
+    val seconds = totalSeconds % 60
+    return when {
+        minutes >= 60 -> "${minutes / 60}h ${minutes % 60}m ago"
+        minutes > 0 -> "${minutes}m ${seconds}s ago"
+        else -> "${seconds}s ago"
+    }
 }
 
 @Composable

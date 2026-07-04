@@ -39,6 +39,12 @@ class BridgeController @Inject constructor(
     private val _events = MutableSharedFlow<BridgeEvent>(extraBufferCapacity = 64)
     val events: SharedFlow<BridgeEvent> = _events.asSharedFlow()
 
+    private val _eventLog = MutableStateFlow<List<BridgeEvent>>(emptyList())
+    val eventLog: StateFlow<List<BridgeEvent>> = _eventLog.asStateFlow()
+
+    private val _sessionStartedAt = MutableStateFlow<Long?>(null)
+    val sessionStartedAt: StateFlow<Long?> = _sessionStartedAt.asStateFlow()
+
     private val _pendingPayment = MutableStateFlow<BridgePaymentRequest?>(null)
     val pendingPayment: StateFlow<BridgePaymentRequest?> = _pendingPayment.asStateFlow()
 
@@ -111,12 +117,17 @@ class BridgeController @Inject constructor(
         }
 
         _status.value = BridgeStatus.Online
+        if (_sessionStartedAt.value == null) {
+            _sessionStartedAt.value = System.currentTimeMillis()
+        }
     }
 
     fun detach() {
         handler?.detach()
         handler = null
         _status.value = BridgeStatus.Initializing
+        _sessionStartedAt.value = null
+        _eventLog.value = emptyList()
         clearPendingPayment()
     }
 
@@ -185,7 +196,11 @@ class BridgeController @Inject constructor(
     }
 
     private fun record(event: BridgeEvent) {
-        scope.launch { _events.emit(event) }
+        scope.launch {
+            _events.emit(event)
+            val updated = (_eventLog.value + event).takeLast(MAX_LOG_ENTRIES)
+            _eventLog.value = updated
+        }
     }
 
     private fun encodeBridgeUser(user: User): String =
@@ -276,6 +291,8 @@ class BridgeController @Inject constructor(
         const val REQUEST_PAYMENT = "wallet.requestPayment"
         const val SHOW_TOAST = "wallet.showToast"
         const val CLOSE = "wallet.close"
+
+        const val MAX_LOG_ENTRIES = 200
     }
 }
 
