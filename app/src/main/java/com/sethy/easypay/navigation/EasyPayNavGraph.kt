@@ -37,6 +37,7 @@ import com.sethy.easypay.design.components.BottomNav
 import com.sethy.easypay.design.components.BottomNavItem
 import com.sethy.easypay.ui.screens.auth.LoginScreen
 import com.sethy.easypay.ui.screens.auth.SignupScreen
+import com.sethy.easypay.ui.screens.bridge.BridgeStoreScreen
 import com.sethy.easypay.ui.screens.home.HomeScreen
 import com.sethy.easypay.ui.screens.notifications.NotificationsScreen
 import com.sethy.easypay.ui.screens.onboarding.OnboardingScreen
@@ -50,12 +51,14 @@ private const val SCALE_DURATION = 400
 
 private val MainTabRoutes = setOf(
     Route.Home.route,
+    Route.Store.route,
     Route.Notifications.route,
     Route.Profile.route
 )
 
 private fun routeToTab(route: String?): BottomNavItem? = when (route) {
     Route.Home.route -> BottomNavItem.Home
+    Route.Store.route -> BottomNavItem.Store
     Route.Notifications.route -> BottomNavItem.Notifications
     Route.Profile.route -> BottomNavItem.Profile
     else -> null
@@ -63,7 +66,7 @@ private fun routeToTab(route: String?): BottomNavItem? = when (route) {
 
 private fun tabToRoute(tab: BottomNavItem): String = when (tab) {
     BottomNavItem.Home -> Route.Home.route
-    BottomNavItem.Store -> Route.Home.route
+    BottomNavItem.Store -> Route.Store.route
     BottomNavItem.Notifications -> Route.Notifications.route
     BottomNavItem.Profile -> Route.Profile.route
 }
@@ -172,7 +175,22 @@ fun EasyPayNavGraph(
                     onNavigateToSendMoney = { navController.navigate(Route.SendMoney.create()) },
                     onNavigateToTransactionDetail = { id ->
                         navController.navigate(Route.TransactionDetail.create(id))
+                    },
+                    onNavigateToStore = {
+                        navController.navigate(Route.Store.route)
                     }
+                )
+            }
+
+            composable(
+                route = Route.Store.route,
+                enterTransition = { slideUpEnter() },
+                exitTransition = { slideDownExit() },
+                popEnterTransition = { slideUpEnter() },
+                popExitTransition = { slideDownExit() }
+            ) {
+                BridgeStoreScreen(
+                    onBackClick = { navController.popBackStack() }
                 )
             }
 
