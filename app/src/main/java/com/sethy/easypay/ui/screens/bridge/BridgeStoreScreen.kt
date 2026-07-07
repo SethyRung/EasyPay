@@ -174,6 +174,7 @@ private fun BridgeWebView(
         modifier = modifier,
         factory = { ctx ->
             WebView(ctx).apply {
+                setBackgroundColor(android.graphics.Color.TRANSPARENT)
                 settings.apply {
                     javaScriptEnabled = true
                     domStorageEnabled = true

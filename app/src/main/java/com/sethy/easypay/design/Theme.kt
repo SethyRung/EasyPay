@@ -1,5 +1,5 @@
 /*
- * EasyPay theme built from DESIGN.md tokens.
+ * EasyPay theme. Currently locked to dark mode.
  * Wraps Material 3 with our colors, typography and shapes.
  */
 package com.sethy.easypay.design
@@ -7,13 +7,12 @@ package com.sethy.easypay.design
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
-import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.compose.ui.graphics.Color
 
-private val LightColorScheme = lightColorScheme(
+private val DarkColorScheme = darkColorScheme(
     primary = Primary,
     onPrimary = OnPrimary,
     primaryContainer = PrimaryActive,
@@ -30,12 +29,12 @@ private val LightColorScheme = lightColorScheme(
     onSurface = Ink,
     surfaceVariant = SurfaceCard,
     onSurfaceVariant = Body,
-    surfaceTint = Color.Transparent,
+    surfaceTint = androidx.compose.ui.graphics.Color.Transparent,
     inverseSurface = SurfaceDark,
     inverseOnSurface = OnDark,
     error = Error,
     onError = OnPrimary,
-    errorContainer = Error.copy(alpha = 0.12f),
+    errorContainer = Error.copy(alpha = 0.16f),
     onErrorContainer = Error,
     outline = Hairline,
     outlineVariant = HairlineSoft,
@@ -64,7 +63,7 @@ fun EasyPayTheme(
         LocalDimens provides EasyPayDimens
     ) {
         MaterialTheme(
-            colorScheme = LightColorScheme,
+            colorScheme = DarkColorScheme,
             typography = Material3Typography,
             shapes = AppShapes,
             content = content
