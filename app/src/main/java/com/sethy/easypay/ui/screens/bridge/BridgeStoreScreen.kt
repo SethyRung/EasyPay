@@ -56,8 +56,6 @@ import com.sethy.easypay.design.SurfaceCard
 import com.sethy.easypay.design.components.TopNav
 import com.sethy.easypay.ui.viewmodel.BridgeStoreViewModel
 
-private const val DEFAULT_STORE_URL = "http://10.0.2.2:3000/"
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BridgeStoreScreen(
@@ -94,41 +92,42 @@ fun BridgeStoreScreen(
                 bridgeController = viewModel.bridgeController,
                 modifier = Modifier.fillMaxSize()
             )
-        }
 
-        androidx.compose.animation.AnimatedVisibility(visible = isLoading) {
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        }
-
-        errorMessage?.let { message ->
-            Surface(
-                modifier = Modifier
-                    .padding(EasyPaySpacing.xl)
-                    .fillMaxWidth(),
-                shape = RoundedCornerShape(EasyPayRadius.md),
-                color = Error.copy(alpha = 0.92f),
-                contentColor = OnDark
-            ) {
-                Row(
-                    modifier = Modifier.padding(EasyPaySpacing.md),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(EasyPaySpacing.sm)
+            androidx.compose.animation.AnimatedVisibility(visible = isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = Lucide.TriangleAlert,
-                        contentDescription = null,
-                        tint = OnDark
-                    )
-                    Text(
-                        text = message,
-                        style = EasyPayTypography.bodySM,
-                        color = OnDark
-                    )
+                    CircularProgressIndicator()
+                }
+            }
+
+            errorMessage?.let { message ->
+                Surface(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(EasyPaySpacing.xl)
+                        .fillMaxWidth(),
+                    shape = RoundedCornerShape(EasyPayRadius.md),
+                    color = Error.copy(alpha = 0.92f),
+                    contentColor = OnDark
+                ) {
+                    Row(
+                        modifier = Modifier.padding(EasyPaySpacing.md),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(EasyPaySpacing.sm)
+                    ) {
+                        Icon(
+                            imageVector = Lucide.TriangleAlert,
+                            contentDescription = null,
+                            tint = OnDark
+                        )
+                        Text(
+                            text = message,
+                            style = EasyPayTypography.bodySM,
+                            color = OnDark
+                        )
+                    }
                 }
             }
         }
@@ -219,7 +218,12 @@ private fun BridgeStatusChip(status: BridgeStatus) {
     val (label, bg, fg, icon) = when (status) {
         BridgeStatus.Initializing -> StatusVisuals("Connecting…", SurfaceCard, Muted, Lucide.Loader)
         BridgeStatus.Online -> StatusVisuals("Bridge OK", Success.copy(alpha = 0.16f), Success, Lucide.Check)
-        is BridgeStatus.Offline -> StatusVisuals("Bridge offline", Error.copy(alpha = 0.16f), Error, Lucide.TriangleAlert)
+        is BridgeStatus.Offline -> StatusVisuals(
+            "Bridge offline",
+            Error.copy(alpha = 0.16f),
+            Error,
+            Lucide.TriangleAlert
+        )
     }
 
     Surface(
