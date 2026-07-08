@@ -27,9 +27,20 @@ class BridgeStoreViewModel @Inject constructor(
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
+    private val _showCloseDialog = MutableStateFlow(false)
+    val showCloseDialog: StateFlow<Boolean> = _showCloseDialog.asStateFlow()
+
     fun onLoaded() {
         _isLoading.value = false
         _errorMessage.value = null
+    }
+
+    fun onBackPressed() {
+        _showCloseDialog.value = true
+    }
+
+    fun dismissCloseDialog() {
+        _showCloseDialog.value = false
     }
 
     fun onLoadError(message: String) {

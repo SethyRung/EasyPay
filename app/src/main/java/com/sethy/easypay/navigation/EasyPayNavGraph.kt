@@ -53,14 +53,12 @@ private const val SCALE_DURATION = 400
 
 private val MainTabRoutes = setOf(
     Route.Home.route,
-    Route.Store.route,
     Route.Notifications.route,
     Route.Profile.route
 )
 
 private fun routeToTab(route: String?): BottomNavItem? = when (route) {
     Route.Home.route -> BottomNavItem.Home
-    Route.Store.route -> BottomNavItem.Store
     Route.Notifications.route -> BottomNavItem.Notifications
     Route.Profile.route -> BottomNavItem.Profile
     else -> null

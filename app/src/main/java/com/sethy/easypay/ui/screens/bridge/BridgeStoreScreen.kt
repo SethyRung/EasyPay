@@ -12,12 +12,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -49,8 +51,10 @@ import com.sethy.easypay.design.EasyPaySpacing
 import com.sethy.easypay.design.EasyPayTheme
 import com.sethy.easypay.design.EasyPayTypography
 import com.sethy.easypay.design.Error
+import com.sethy.easypay.design.Ink
 import com.sethy.easypay.design.Muted
 import com.sethy.easypay.design.OnDark
+import com.sethy.easypay.design.Primary
 import com.sethy.easypay.design.Success
 import com.sethy.easypay.design.SurfaceCard
 import com.sethy.easypay.design.components.TopNav
@@ -69,12 +73,13 @@ fun BridgeStoreScreen(
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
     val paymentSheetState by viewModel.paymentSheetState.collectAsStateWithLifecycle()
+    val showCloseDialog by viewModel.showCloseDialog.collectAsStateWithLifecycle()
 
     androidx.compose.foundation.layout.Column(modifier = modifier.fillMaxSize()) {
         TopNav(
             title = "Glitch Store",
             showBackButton = true,
-            onBackClick = onBackClick,
+            onBackClick = { viewModel.onBackPressed() },
             actions = {
                 BridgeStatusChip(status = status)
             }
@@ -156,6 +161,47 @@ fun BridgeStoreScreen(
                 onDismiss = { viewModel.onPaymentSheetDismissed() }
             )
         }
+    }
+
+    if (showCloseDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissCloseDialog() },
+            title = {
+                Text(
+                    text = "Close Glitch Store?",
+                    style = EasyPayTypography.titleMD,
+                    color = Ink
+                )
+            },
+            text = {
+                Text(
+                    text = "Any in-progress checkout or bridge session will be cancelled.",
+                    style = EasyPayTypography.bodyMD,
+                    color = Muted
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.dismissCloseDialog()
+                    onBackClick()
+                }) {
+                    Text(
+                        text = "Close",
+                        style = EasyPayTypography.button,
+                        color = Primary
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.dismissCloseDialog() }) {
+                    Text(
+                        text = "Cancel",
+                        style = EasyPayTypography.button,
+                        color = Muted
+                    )
+                }
+            }
+        )
     }
 }
 
