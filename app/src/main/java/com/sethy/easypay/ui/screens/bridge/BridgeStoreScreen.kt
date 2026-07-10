@@ -1,5 +1,6 @@
 package com.sethy.easypay.ui.screens.bridge
 
+import android.webkit.CookieManager
 import android.webkit.WebSettings
 import android.webkit.WebView
 import androidx.compose.animation.AnimatedVisibility
@@ -141,7 +142,6 @@ fun BridgeStoreScreen(
     if (paymentSheetState !is PaymentSheetState.Hidden) {
         val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
         LaunchedEffect(paymentSheetState) {
-            // Reset dismiss-allowed state whenever the sheet content changes
             sheetState.show()
         }
         ModalBottomSheet(
@@ -229,6 +229,7 @@ private fun BridgeWebView(
                     allowContentAccess = false
                     mediaPlaybackRequiresUserGesture = false
                 }
+                CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
                 webViewClient = object : android.webkit.WebViewClient() {
                     override fun onPageFinished(view: WebView?, url: String?) {
                         onLoaded()
@@ -243,6 +244,7 @@ private fun BridgeWebView(
                         onError(description ?: "Load error ($errorCode)")
                     }
                 }
+                bridgeController.attach(this)
                 loadUrl(url)
                 webViewRef = this
             }
@@ -250,12 +252,9 @@ private fun BridgeWebView(
     )
 
     DisposableEffect(webViewRef) {
-        val wv = webViewRef
-        if (wv != null) {
-            bridgeController.attach(wv)
-        }
         onDispose {
             bridgeController.detach()
+            webViewRef?.destroy()
         }
     }
 }
