@@ -120,4 +120,6 @@ class StoreEntryBridgeTest {
         assertTrue("expected failure, got $result", result.isFailure)
         verifyNoInteractions(store)
     }
+
+
 }
