@@ -226,6 +226,10 @@ private fun BridgeWebView(
                     domStorageEnabled = true
                     cacheMode = WebSettings.LOAD_DEFAULT
                     allowFileAccess = false
+                    @Suppress("DEPRECATION")
+                    setAllowFileAccessFromFileURLs(false)
+                    @Suppress("DEPRECATION")
+                    setAllowUniversalAccessFromFileURLs(false)
                     allowContentAccess = false
                     mediaPlaybackRequiresUserGesture = false
                 }
@@ -245,11 +249,17 @@ private fun BridgeWebView(
                     }
                 }
                 bridgeController.attach(this)
-                loadUrl(url)
                 webViewRef = this
             }
         }
     )
+
+    LaunchedEffect(webViewRef, url) {
+        val wv = webViewRef
+        if (wv != null && url.isNotBlank() && wv.url != url) {
+            wv.loadUrl(url)
+        }
+    }
 
     DisposableEffect(webViewRef) {
         onDispose {

@@ -1,6 +1,7 @@
 package com.sethy.easypay.di
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import com.sethy.easypay.BuildConfig
 import com.sethy.easypay.data.api.ApiProvider
 import com.sethy.easypay.data.api.AuthApi
 import com.sethy.easypay.data.api.AuthInterceptor
@@ -116,4 +117,9 @@ object NetworkModule {
     @Singleton
     fun provideNotificationApi(@Named("default") retrofit: Retrofit): NotificationApi =
         retrofit.create(NotificationApi::class.java)
+
+    @Provides
+    @Singleton
+    @GlitchHost
+    fun provideGlitchHost(): String = BuildConfig.GLITCH_HOST
 }

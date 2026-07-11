@@ -25,10 +25,12 @@ android {
     buildTypes {
         debug {
             buildConfigField("Boolean", "USE_MOCK_DATA", "true")
+            buildConfigField("String", "GLITCH_HOST", "\"http://10.0.2.2:3000\"")
         }
         release {
             isMinifyEnabled = false
             buildConfigField("Boolean", "USE_MOCK_DATA", "false")
+            buildConfigField("String", "GLITCH_HOST", "\"https://glitch.sethyrung.com\"")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

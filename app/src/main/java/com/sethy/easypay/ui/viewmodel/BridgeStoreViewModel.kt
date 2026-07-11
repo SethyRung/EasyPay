@@ -1,24 +1,28 @@
 package com.sethy.easypay.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.sethy.easypay.bridge.BridgeController
 import com.sethy.easypay.bridge.BridgeStatus
 import com.sethy.easypay.bridge.PaymentSheetState
+import com.sethy.easypay.bridge.StoreEntryBridge
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class BridgeStoreViewModel @Inject constructor(
-    val bridgeController: BridgeController
+    val bridgeController: BridgeController,
+    private val storeEntryBridge: StoreEntryBridge,
 ) : ViewModel() {
 
     val status: StateFlow<BridgeStatus> = bridgeController.status
     val paymentSheetState: StateFlow<PaymentSheetState> = bridgeController.paymentSheetState
 
-    private val _storeUrl = MutableStateFlow(DEFAULT_STORE_URL)
+    private val _storeUrl = MutableStateFlow("")
     val storeUrl: StateFlow<String> = _storeUrl.asStateFlow()
 
     private val _isLoading = MutableStateFlow(true)
@@ -29,6 +33,26 @@ class BridgeStoreViewModel @Inject constructor(
 
     private val _showCloseDialog = MutableStateFlow(false)
     val showCloseDialog: StateFlow<Boolean> = _showCloseDialog.asStateFlow()
+
+    init {
+        openStore()
+    }
+
+    fun openStore() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
+
+            storeEntryBridge.openStore()
+                .onSuccess { host ->
+                    _storeUrl.value = host
+                }
+                .onFailure { e ->
+                    _isLoading.value = false
+                    _errorMessage.value = e.message ?: "Failed to enter store"
+                }
+        }
+    }
 
     fun onLoaded() {
         _isLoading.value = false
@@ -63,9 +87,5 @@ class BridgeStoreViewModel @Inject constructor(
 
     fun dismissPaymentSheet() {
         bridgeController.dismissPaymentSheet()
-    }
-
-    companion object {
-        const val DEFAULT_STORE_URL = "http://10.0.2.2:3000/"
     }
 }
