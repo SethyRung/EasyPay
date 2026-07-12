@@ -6,6 +6,8 @@ import com.sethy.easypay.data.dto.RefreshTokenRequest
 import com.sethy.easypay.data.dto.RegisterRequest
 import com.sethy.easypay.data.mapper.toAuthResult
 import com.sethy.easypay.data.repository.BaseRepository
+import retrofit2.HttpException
+import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -30,8 +32,14 @@ class RemoteAuthDataSource @Inject constructor(
     override suspend fun logout(): Result<Unit> = try {
         authApi.logout()
         Result.success(Unit)
-    } catch (_: Exception) {
-        Result.success(Unit)
+    } catch (e: HttpException) {
+        Result.failure(
+            ApiException("Logout failed (HTTP ${e.code()})", "HTTP_${e.code()}")
+        )
+    } catch (e: IOException) {
+        Result.failure(
+            NetworkException("Logout failed: ${e.message ?: "network error"}", e)
+        )
     }
 
     override suspend fun refreshToken(refreshToken: String): Result<AuthResult> = safeApiCall {

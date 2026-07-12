@@ -30,9 +30,10 @@ class DefaultAuthRepository @Inject constructor(
             .map { it.user }
     }
 
-    override suspend fun logout() {
-        authDataSource.logout()
+    override suspend fun logout(): Result<Unit> {
+        val serverResult = authDataSource.logout()
         tokenManager.clearTokens()
+        return serverResult
     }
 
     override suspend fun isLoggedIn(): Boolean {

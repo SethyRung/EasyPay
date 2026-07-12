@@ -76,7 +76,15 @@ class ProfileViewModel @Inject constructor(
 
     private fun confirmLogout() {
         viewModelScope.launch {
-            logoutUseCase()
+            val result = logoutUseCase()
+            if (result.isFailure) {
+                _effect.send(
+                    ProfileEffect.ShowError(
+                        result.exceptionOrNull()?.message
+                            ?: "Server logout failed. You are logged out locally."
+                    )
+                )
+            }
             _state.value = ProfileUiState()
             _effect.send(ProfileEffect.NavigateToLogin)
         }
