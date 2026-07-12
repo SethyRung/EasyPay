@@ -6,19 +6,38 @@ import com.sethy.easypay.domain.usecase.GetCurrentUserUseCase
 import com.sethy.easypay.domain.usecase.LogoutUseCase
 import com.sethy.easypay.ui.state.ProfileEffect
 import com.sethy.easypay.ui.state.ProfileEvent
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
-import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.runTest
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class ProfileViewModelTest {
+
+    private val testDispatcher = StandardTestDispatcher()
+
+    @Before
+    fun setUp() {
+        Dispatchers.setMain(testDispatcher)
+    }
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
+    }
 
     private val testUser = User(
         id = "user-1",
@@ -90,7 +109,7 @@ class ProfileViewModelTest {
         val getCurrentUser: GetCurrentUserUseCase = mock()
         val logoutUseCase: LogoutUseCase = mock()
         whenever(getCurrentUser()).thenReturn(Result.success(testUser))
-        whenever(logoutUseCase.invoke()).thenReturn(Unit)
+        whenever(logoutUseCase.invoke()).thenReturn(Result.success(Unit))
 
         val vm = ProfileViewModel(getCurrentUser, logoutUseCase)
         advanceUntilIdle()
@@ -105,11 +124,34 @@ class ProfileViewModelTest {
     }
 
     @Test
+    fun ConfirmLogout_emits_warning_when_server_logout_fails() = runTest {
+        val getCurrentUser: GetCurrentUserUseCase = mock()
+        val logoutUseCase: LogoutUseCase = mock()
+        whenever(getCurrentUser()).thenReturn(Result.success(testUser))
+        whenever(logoutUseCase.invoke()).thenReturn(
+            Result.failure(Exception("Logout failed: network error"))
+        )
+
+        val vm = ProfileViewModel(getCurrentUser, logoutUseCase)
+        advanceUntilIdle()
+
+        vm.effect.test {
+            vm.onEvent(ProfileEvent.ConfirmLogout)
+            advanceUntilIdle()
+            assertEquals(
+                ProfileEffect.ShowError("Logout failed: network error"),
+                awaitItem()
+            )
+            assertEquals(ProfileEffect.NavigateToLogin, awaitItem())
+        }
+    }
+
+    @Test
     fun ConfirmLogout_resets_state() = runTest {
         val getCurrentUser: GetCurrentUserUseCase = mock()
         val logoutUseCase: LogoutUseCase = mock()
         whenever(getCurrentUser()).thenReturn(Result.success(testUser))
-        whenever(logoutUseCase.invoke()).thenReturn(Unit)
+        whenever(logoutUseCase.invoke()).thenReturn(Result.success(Unit))
 
         val vm = ProfileViewModel(getCurrentUser, logoutUseCase)
         advanceUntilIdle()

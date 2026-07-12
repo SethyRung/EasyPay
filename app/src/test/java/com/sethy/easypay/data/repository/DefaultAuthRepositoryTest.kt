@@ -102,15 +102,32 @@ class DefaultAuthRepositoryTest {
     // ─── logout ──────────────────────────────────────────────────────────────
 
     @Test
-    fun `logout calls dataSource logout and clears tokens`() = runTest(testDispatcher) {
+    fun `logout returns server success and clears tokens`() = runTest(testDispatcher) {
         Dispatchers.setMain(testDispatcher)
         whenever(authDataSource.logout()).thenReturn(Result.success(Unit))
 
         val repo = createRepository()
-        repo.logout()
+        val result = repo.logout()
         advanceUntilIdle()
 
+        assertTrue(result.isSuccess)
         verify(authDataSource).logout()
+        verify(tokenManager).clearTokens()
+    }
+
+    @Test
+    fun `logout still clears tokens when server call fails`() = runTest(testDispatcher) {
+        Dispatchers.setMain(testDispatcher)
+        whenever(authDataSource.logout())
+            .thenReturn(Result.failure(Exception("Logout failed: network error")))
+
+        val repo = createRepository()
+        val result = repo.logout()
+        advanceUntilIdle()
+
+        verify(tokenManager).clearTokens()
+        assertTrue(result.isFailure)
+        assertEquals("Logout failed: network error", result.exceptionOrNull()?.message)
     }
 
     // ─── isLoggedIn ─────────────────────────────────────────────────────────
