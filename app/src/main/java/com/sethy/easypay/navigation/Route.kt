@@ -25,4 +25,7 @@ sealed class Route(val route: String) {
     data object TransactionDetail : Route("transactionDetail/{id}") {
         fun create(id: String) = "transactionDetail/$id"
     }
+
+    data object Settings : Route("settings")
+    data object Calendar : Route("calendar")
 }

@@ -39,12 +39,14 @@ import com.sethy.easypay.ui.screens.auth.LoginScreen
 import com.sethy.easypay.ui.screens.auth.SignupScreen
 import com.sethy.easypay.ui.screens.bridge.BridgeEventLogScreen
 import com.sethy.easypay.ui.screens.bridge.BridgeStoreScreen
+import com.sethy.easypay.ui.screens.calendar.CalendarScreen
 import com.sethy.easypay.ui.screens.home.HomeScreen
 import com.sethy.easypay.ui.screens.notifications.NotificationsScreen
 import com.sethy.easypay.ui.screens.onboarding.OnboardingScreen
 import com.sethy.easypay.ui.screens.profile.ProfileScreen
 import com.sethy.easypay.ui.screens.send.SendMoneyScreen
 import com.sethy.easypay.ui.screens.send.TransferSuccessScreen
+import com.sethy.easypay.ui.screens.settings.SettingsScreen
 import com.sethy.easypay.ui.screens.transactions.TransactionDetailScreen
 import com.sethy.easypay.ui.screens.wallet.TopUpScreen
 
@@ -181,6 +183,12 @@ fun EasyPayNavGraph(
                     },
                     onNavigateToTopUp = {
                         navController.navigate(Route.TopUp.route)
+                    },
+                    onNavigateToSettings = {
+                        navController.navigate(Route.Settings.route)
+                    },
+                    onNavigateToNotifications = {
+                        navController.navigate(Route.Notifications.route)
                     }
                 )
             }
@@ -232,7 +240,12 @@ fun EasyPayNavGraph(
                 popEnterTransition = { slideRightEnter() },
                 popExitTransition = { slideRightExit() }
             ) {
-                NotificationsScreen(onBackClick = { navController.popBackStack() })
+                NotificationsScreen(
+                    onBackClick = { navController.popBackStack() },
+                    onNavigateToTransactionDetail = { id ->
+                        navController.navigate(Route.TransactionDetail.create(id))
+                    }
+                )
             }
 
             composable(
@@ -317,6 +330,30 @@ fun EasyPayNavGraph(
                 popExitTransition = { slideRightExit() }
             ) {
                 TransactionDetailScreen(onBackClick = { navController.popBackStack() })
+            }
+
+            composable(
+                route = Route.Settings.route,
+                enterTransition = { slideLeftEnter() },
+                exitTransition = { slideLeftExit() },
+                popEnterTransition = { slideRightEnter() },
+                popExitTransition = { slideRightExit() }
+            ) {
+                SettingsScreen(
+                    onBackClick = { navController.popBackStack() },
+                    onNavigateToEditProfile = { navController.navigate(Route.Profile.route) },
+                    onNavigateToCalendar = { navController.navigate(Route.Calendar.route) }
+                )
+            }
+
+            composable(
+                route = Route.Calendar.route,
+                enterTransition = { slideLeftEnter() },
+                exitTransition = { slideLeftExit() },
+                popEnterTransition = { slideRightEnter() },
+                popExitTransition = { slideRightExit() }
+            ) {
+                CalendarScreen(onBackClick = { navController.popBackStack() })
             }
         }
     }

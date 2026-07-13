@@ -55,6 +55,8 @@ fun HomeScreen(
     onNavigateToTransactionDetail: (String) -> Unit,
     onNavigateToStore: () -> Unit = {},
     onNavigateToTopUp: () -> Unit = {},
+    onNavigateToSettings: () -> Unit = {},
+    onNavigateToNotifications: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -77,14 +79,14 @@ fun HomeScreen(
                 title = null,
                 showBackButton = false,
                 actions = {
-                    IconButton(onClick = { /* TODO: notifications */ }) {
+                    IconButton(onClick = onNavigateToNotifications) {
                         Icon(
                             imageVector = Lucide.Bell,
                             contentDescription = "Notifications",
                             tint = Ink
                         )
                     }
-                    IconButton(onClick = { /* TODO: settings */ }) {
+                    IconButton(onClick = onNavigateToSettings) {
                         Icon(
                             imageVector = Lucide.Settings,
                             contentDescription = "Settings",
