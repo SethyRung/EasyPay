@@ -41,7 +41,12 @@ class NotificationsViewModel @Inject constructor(
             is NotificationsEvent.TabSelected -> {
                 _state.value = _state.value.copy(selectedTab = event.tab)
             }
-            is NotificationsEvent.NotificationClicked -> markAsRead(event.id)
+            is NotificationsEvent.NotificationClicked -> {
+                markAsRead(event.id)
+                viewModelScope.launch {
+                    _effect.send(NotificationsEffect.NavigateToTransactionDetail(event.id))
+                }
+            }
             NotificationsEvent.MarkAllRead -> markAllAsRead()
             NotificationsEvent.Back -> viewModelScope.launch {
                 _effect.send(NotificationsEffect.NavigateBack)

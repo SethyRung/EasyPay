@@ -64,6 +64,7 @@ import java.util.Locale
 fun NotificationsScreen(
     viewModel: NotificationsViewModel = hiltViewModel(),
     onBackClick: () -> Unit,
+    onNavigateToTransactionDetail: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -72,6 +73,7 @@ fun NotificationsScreen(
         viewModel.effect.collect { effect ->
             when (effect) {
                 NotificationsEffect.NavigateBack -> onBackClick()
+                is NotificationsEffect.NavigateToTransactionDetail -> onNavigateToTransactionDetail(effect.id)
                 is NotificationsEffect.ShowError -> { /* Handled via state.errorMessage */ }
             }
         }
@@ -181,17 +183,16 @@ private fun NotificationList(
     onNotificationClick: (String) -> Unit
 ) {
     val grouped = notifications.groupByDate()
-    val dateFormat = remember { SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault()) }
     val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(EasyPaySpacing.md)
     ) {
-        grouped.forEach { (dateMillis, items) ->
+        grouped.forEach { (dateLabel, items) ->
             item {
                 Text(
-                    text = dateFormat.format(Date(dateMillis)),
+                    text = dateLabel,
                     style = EasyPayTypography.captionUppercase,
                     color = Muted,
                     modifier = Modifier.padding(vertical = EasyPaySpacing.sm)
@@ -307,9 +308,9 @@ private fun filterNotifications(
     NotificationTab.ALERTS -> notifications.filter { it.type == NotificationType.ALERT }
 }
 
-private fun List<Notification>.groupByDate(): Map<Long, List<Notification>> {
-    val dateFormat = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
-    return groupBy { dateFormat.format(Date(it.timestamp)).toLong() }
+private fun List<Notification>.groupByDate(): Map<String, List<Notification>> {
+    val dateFormat = SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault())
+    return groupBy { dateFormat.format(Date(it.timestamp)) }
         .toSortedMap(reverseOrder())
 }
 
