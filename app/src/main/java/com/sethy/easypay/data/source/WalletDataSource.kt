@@ -19,6 +19,7 @@ data class TopUp(
 )
 
 interface WalletDataSource {
+    fun setCurrentUser(user: User)
     suspend fun getUser(): Result<User>
     suspend fun getBalance(): Result<Double>
     suspend fun getTransactions(limit: Int, offset: Int): Result<List<Transaction>>

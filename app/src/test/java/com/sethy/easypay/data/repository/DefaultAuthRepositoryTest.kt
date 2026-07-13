@@ -4,6 +4,7 @@ import com.sethy.easypay.data.local.AuthTokenManager
 import com.sethy.easypay.data.model.User
 import com.sethy.easypay.data.source.AuthDataSource
 import com.sethy.easypay.data.source.AuthResult
+import com.sethy.easypay.data.source.WalletDataSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -22,6 +23,7 @@ class DefaultAuthRepositoryTest {
 
     private val authDataSource: AuthDataSource = mock()
     private val tokenManager: AuthTokenManager = mock()
+    private val walletDataSource: WalletDataSource = mock()
     private val testDispatcher = StandardTestDispatcher()
 
     private val testUser = User(
@@ -38,7 +40,7 @@ class DefaultAuthRepositoryTest {
         refreshToken = "refresh-token-456"
     )
 
-    private fun createRepository() = DefaultAuthRepository(authDataSource, tokenManager)
+    private fun createRepository() = DefaultAuthRepository(authDataSource, tokenManager, walletDataSource)
 
     // ─── login ───────────────────────────────────────────────────────────────
 

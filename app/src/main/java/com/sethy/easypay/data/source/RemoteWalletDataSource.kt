@@ -23,6 +23,10 @@ class RemoteWalletDataSource @Inject constructor(
     private val notificationApi: NotificationApi
 ) : BaseRepository(), WalletDataSource {
 
+    override fun setCurrentUser(user: User) {
+        // Backend owns user state; no client-side cache to update.
+    }
+
     override suspend fun getUser(): Result<User> = Result.failure(
         NotImplementedError("User profile endpoint is not yet implemented")
     )

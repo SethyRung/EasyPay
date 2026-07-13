@@ -3,6 +3,7 @@ package com.sethy.easypay.data.repository
 import com.sethy.easypay.data.local.AuthTokenManager
 import com.sethy.easypay.data.model.User
 import com.sethy.easypay.data.source.AuthDataSource
+import com.sethy.easypay.data.source.WalletDataSource
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -10,12 +11,16 @@ import javax.inject.Singleton
 @Singleton
 class DefaultAuthRepository @Inject constructor(
     private val authDataSource: AuthDataSource,
-    private val tokenManager: AuthTokenManager
+    private val tokenManager: AuthTokenManager,
+    private val walletDataSource: WalletDataSource
 ) : BaseRepository(), AuthRepository {
 
     override suspend fun login(email: String, password: String): Result<User> {
         return authDataSource.login(email, password)
-            .onSuccess { result -> saveTokens(result) }
+            .onSuccess { result ->
+                saveTokens(result)
+                walletDataSource.setCurrentUser(result.user)
+            }
             .map { it.user }
     }
 
@@ -26,7 +31,10 @@ class DefaultAuthRepository @Inject constructor(
         password: String
     ): Result<User> {
         return authDataSource.register(name, email, phone, password)
-            .onSuccess { result -> saveTokens(result) }
+            .onSuccess { result ->
+                saveTokens(result)
+                walletDataSource.setCurrentUser(result.user)
+            }
             .map { it.user }
     }
 

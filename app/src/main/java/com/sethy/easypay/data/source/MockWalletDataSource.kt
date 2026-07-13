@@ -33,6 +33,18 @@ class MockWalletDataSource @Inject constructor(
         loaded = true
     }
 
+    override fun setCurrentUser(user: User) {
+        ensureLoadedSync()
+        this.user = user
+    }
+
+    private fun ensureLoadedSync() {
+        if (loaded) return
+        kotlinx.coroutines.runBlocking {
+            if (!loaded) ensureLoaded()
+        }
+    }
+
     override suspend fun getUser(): Result<User> {
         ensureLoaded()
         return user?.let { Result.success(it) }
