@@ -1,7 +1,6 @@
 package com.sethy.easypay.data.api
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
-import com.sethy.easypay.data.dto.RefreshTokenRequest
 import com.sethy.easypay.data.local.AuthTokenManager
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
