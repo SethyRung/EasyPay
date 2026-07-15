@@ -19,7 +19,7 @@ class RemoteAuthDataSourceTest {
 
     private val authApi: AuthApi = mock()
 
-    private fun createDataSource() = RemoteAuthDataSource(authApi)
+    private fun createDataSource() = RemoteAuthDataSource(authApi, com.sethy.easypay.data.auth.AuthSessionNotifier())
 
     @Test
     fun `logout returns success on 2xx`() = runTest {

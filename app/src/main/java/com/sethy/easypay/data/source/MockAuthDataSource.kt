@@ -91,6 +91,12 @@ class MockAuthDataSource(
 
     override suspend fun logout(): Result<Unit> = Result.success(Unit)
 
+    override suspend fun getSession(): Result<User> {
+        ensureLoaded()
+        val user = synchronized(lock) { users.values.firstOrNull()?.user }
+        return if (user != null) Result.success(user) else Result.failure(InvalidCredentialsException())
+    }
+
     companion object {
         /** Password for the demo account seeded from `assets/data/user.json`. */
         const val DEMO_PASSWORD = "password123"

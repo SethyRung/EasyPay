@@ -39,7 +39,7 @@ class DefaultWalletRepositoryTest {
         status = TransactionStatus.COMPLETED
     )
 
-    private fun createRepository() = DefaultWalletRepository(walletDataSource)
+    private fun createRepository() = DefaultWalletRepository(walletDataSource, com.sethy.easypay.data.auth.AuthSessionNotifier())
 
     // ─── getCurrentUser ─────────────────────────────────────────────────────
 

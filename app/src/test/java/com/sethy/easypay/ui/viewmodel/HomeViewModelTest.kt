@@ -9,20 +9,39 @@ import com.sethy.easypay.domain.usecase.GetBalanceUseCase
 import com.sethy.easypay.domain.usecase.GetTransactionsUseCase
 import com.sethy.easypay.ui.state.HomeEffect
 import com.sethy.easypay.ui.state.HomeEvent
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
-import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.runTest
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
 
-    private fun TestScope.createViewModel(): HomeViewModel {
+    private val testDispatcher = StandardTestDispatcher()
+
+    @Before
+    fun setUp() {
+        Dispatchers.setMain(testDispatcher)
+    }
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
+    }
+
+    private fun createViewModel(): HomeViewModel {
         val getBalance: GetBalanceUseCase = mock()
         val getTransactions: GetTransactionsUseCase = mock()
         return HomeViewModel(getBalance, getTransactions)

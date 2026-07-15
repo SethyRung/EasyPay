@@ -2,6 +2,7 @@ package com.sethy.easypay.data.source
 
 import com.sethy.easypay.data.api.NotificationApi
 import com.sethy.easypay.data.api.WalletApi
+import com.sethy.easypay.data.auth.AuthSessionNotifier
 import com.sethy.easypay.data.dto.BillPaymentRequest
 import com.sethy.easypay.data.dto.SendMoneyRequest
 import com.sethy.easypay.data.dto.TopUpRequest
@@ -20,8 +21,9 @@ import javax.inject.Singleton
 @Singleton
 class RemoteWalletDataSource @Inject constructor(
     private val walletApi: WalletApi,
-    private val notificationApi: NotificationApi
-) : BaseRepository(), WalletDataSource {
+    private val notificationApi: NotificationApi,
+    authSessionNotifier: AuthSessionNotifier
+) : BaseRepository(authSessionNotifier), WalletDataSource {
 
     override fun setCurrentUser(user: User) {
         // Backend owns user state; no client-side cache to update.

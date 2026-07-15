@@ -4,13 +4,33 @@ import app.cash.turbine.test
 import com.sethy.easypay.data.local.OnboardingPreferences
 import com.sethy.easypay.ui.state.OnboardingEffect
 import com.sethy.easypay.ui.state.OnboardingEvent
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class OnboardingViewModelTest {
+
+    private val testDispatcher = StandardTestDispatcher()
+
+    @Before
+    fun setUp() {
+        Dispatchers.setMain(testDispatcher)
+    }
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
+    }
 
     private fun createViewModel(): Pair<OnboardingViewModel, OnboardingPreferences> {
         val prefs: OnboardingPreferences = mock()

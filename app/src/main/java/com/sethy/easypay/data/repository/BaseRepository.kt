@@ -1,11 +1,12 @@
 package com.sethy.easypay.data.repository
 
+import com.sethy.easypay.data.auth.AuthSessionNotifier
 import com.sethy.easypay.data.dto.ApiResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.IOException
 
-abstract class BaseRepository {
+abstract class BaseRepository(private val authSessionNotifier: AuthSessionNotifier) {
 
     protected suspend fun <T> safeApiCall(
         apiCall: suspend () -> ApiResponse<T>
@@ -20,6 +21,9 @@ abstract class BaseRepository {
                     Result.failure(ApiException(response.status.message, response.status.code))
                 }
             } else {
+                if (response.status.code == "UNAUTHORIZED") {
+                    authSessionNotifier.notifyExpired()
+                }
                 Result.failure(ApiException(response.status.message, response.status.code))
             }
         } catch (e: IOException) {

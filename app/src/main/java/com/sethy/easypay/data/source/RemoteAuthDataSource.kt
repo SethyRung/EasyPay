@@ -1,9 +1,11 @@
 package com.sethy.easypay.data.source
 
 import com.sethy.easypay.data.api.AuthApi
+import com.sethy.easypay.data.auth.AuthSessionNotifier
 import com.sethy.easypay.data.dto.LoginRequest
 import com.sethy.easypay.data.dto.RegisterRequest
 import com.sethy.easypay.data.mapper.toAuthResult
+import com.sethy.easypay.data.mapper.toUser
 import com.sethy.easypay.data.repository.BaseRepository
 import retrofit2.HttpException
 import java.io.IOException
@@ -12,8 +14,9 @@ import javax.inject.Singleton
 
 @Singleton
 class RemoteAuthDataSource @Inject constructor(
-    private val authApi: AuthApi
-) : BaseRepository(), AuthDataSource {
+    private val authApi: AuthApi,
+    authSessionNotifier: AuthSessionNotifier
+) : BaseRepository(authSessionNotifier), AuthDataSource {
 
     override suspend fun login(email: String, password: String): Result<AuthResult> = safeApiCall {
         authApi.signIn(LoginRequest(email, password))
@@ -40,4 +43,8 @@ class RemoteAuthDataSource @Inject constructor(
             NetworkException("Logout failed: ${e.message ?: "network error"}", e)
         )
     }
+
+    override suspend fun getSession(): Result<com.sethy.easypay.data.model.User> = safeApiCall {
+        authApi.getSession()
+    }.map { it.user.toUser() }
 }

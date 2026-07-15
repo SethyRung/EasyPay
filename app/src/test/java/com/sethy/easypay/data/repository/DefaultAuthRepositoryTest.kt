@@ -39,7 +39,7 @@ class DefaultAuthRepositoryTest {
         accessToken = "access-token-123"
     )
 
-    private fun createRepository() = DefaultAuthRepository(authDataSource, tokenManager, walletDataSource)
+    private fun createRepository() = DefaultAuthRepository(authDataSource, tokenManager, walletDataSource, com.sethy.easypay.data.auth.AuthSessionNotifier())
 
     // ─── login ───────────────────────────────────────────────────────────────
 

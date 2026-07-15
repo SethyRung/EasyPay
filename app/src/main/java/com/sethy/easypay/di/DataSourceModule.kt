@@ -5,6 +5,7 @@ import com.sethy.easypay.BuildConfig
 import com.sethy.easypay.data.api.AuthApi
 import com.sethy.easypay.data.api.NotificationApi
 import com.sethy.easypay.data.api.WalletApi
+import com.sethy.easypay.data.auth.AuthSessionNotifier
 import com.sethy.easypay.data.source.AuthDataSource
 import com.sethy.easypay.data.source.MockAuthDataSource
 import com.sethy.easypay.data.source.MockDataLoader
@@ -28,21 +29,23 @@ object DataSourceModule {
     fun provideWalletDataSource(
         @ApplicationContext context: Context,
         walletApi: WalletApi,
-        notificationApi: NotificationApi
+        notificationApi: NotificationApi,
+        authSessionNotifier: AuthSessionNotifier
     ): WalletDataSource = if (BuildConfig.USE_MOCK_DATA) {
         MockWalletDataSource(context)
     } else {
-        RemoteWalletDataSource(walletApi, notificationApi)
+        RemoteWalletDataSource(walletApi, notificationApi, authSessionNotifier)
     }
 
     @Provides
     @Singleton
     fun provideAuthDataSource(
         @ApplicationContext context: Context,
-        authApi: AuthApi
+        authApi: AuthApi,
+        authSessionNotifier: AuthSessionNotifier
     ): AuthDataSource = if (BuildConfig.USE_MOCK_DATA) {
         MockAuthDataSource(seed = { MockDataLoader.loadUser(context) })
     } else {
-        RemoteAuthDataSource(authApi)
+        RemoteAuthDataSource(authApi, authSessionNotifier)
     }
 }

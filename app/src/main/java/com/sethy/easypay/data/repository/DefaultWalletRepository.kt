@@ -1,5 +1,6 @@
 package com.sethy.easypay.data.repository
 
+import com.sethy.easypay.data.auth.AuthSessionNotifier
 import com.sethy.easypay.data.model.Transaction
 import com.sethy.easypay.data.model.User
 import com.sethy.easypay.data.source.BillPayment
@@ -10,8 +11,9 @@ import javax.inject.Singleton
 
 @Singleton
 class DefaultWalletRepository @Inject constructor(
-    private val walletDataSource: WalletDataSource
-) : BaseRepository(), WalletRepository {
+    private val walletDataSource: WalletDataSource,
+    authSessionNotifier: AuthSessionNotifier
+) : BaseRepository(authSessionNotifier), WalletRepository {
 
     override suspend fun getCurrentUser(): Result<User> = walletDataSource.getUser()
 
