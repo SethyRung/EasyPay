@@ -1,7 +1,9 @@
 package com.sethy.easypay.bridge
 
 import com.sethy.easypay.data.api.WalletApi
-import com.sethy.easypay.data.dto.BridgeIssueResponse
+import com.sethy.easypay.data.dto.ApiResponse
+import com.sethy.easypay.data.dto.BridgeIssueData
+import com.sethy.easypay.data.dto.Status
 import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.ResponseBody.Companion.toResponseBody
@@ -28,11 +30,22 @@ class StoreEntryBridgeTest {
         host: String = glitchHost,
     ): StoreEntryBridge = StoreEntryBridge(api, host, store)
 
+    private fun successResponse(data: BridgeIssueData): ApiResponse<BridgeIssueData> =
+        ApiResponse(
+            status = Status(
+                code = "SUCCESS",
+                message = "ok",
+                requestId = "req-test",
+                requestTime = 0L
+            ),
+            data = data
+        )
+
     @Test
     fun openStore_happyPath_writesCookieAndReturnsGlitchHost() = runTest {
         val api: WalletApi = mock()
         val store: WebViewCookieStore = mock()
-        whenever(api.bridgeIssue()).thenReturn(BridgeIssueResponse(cookie = cookieString))
+        whenever(api.bridgeIssue()).thenReturn(successResponse(BridgeIssueData(cookie = cookieString)))
 
         val result = createBridge(api, store).openStore()
 
@@ -72,10 +85,32 @@ class StoreEntryBridgeTest {
     }
 
     @Test
+    fun openStore_failureEnvelope_returnsFailure_noCookieWritten() = runTest {
+        val api: WalletApi = mock()
+        val store: WebViewCookieStore = mock()
+        whenever(api.bridgeIssue()).thenReturn(
+            ApiResponse(
+                status = Status(
+                    code = "FAILURE",
+                    message = "bridge disabled",
+                    requestId = "req-fail",
+                    requestTime = 0L
+                ),
+                data = null
+            )
+        )
+
+        val result = createBridge(api, store).openStore()
+
+        assertTrue("expected failure, got $result", result.isFailure)
+        verifyNoInteractions(store)
+    }
+
+    @Test
     fun openStore_emptyCookie_returnsFailure_noCookieWritten() = runTest {
         val api: WalletApi = mock()
         val store: WebViewCookieStore = mock()
-        whenever(api.bridgeIssue()).thenReturn(BridgeIssueResponse(cookie = ""))
+        whenever(api.bridgeIssue()).thenReturn(successResponse(BridgeIssueData(cookie = "")))
 
         val result = createBridge(api, store).openStore()
 
@@ -87,19 +122,7 @@ class StoreEntryBridgeTest {
     fun openStore_blankCookie_returnsFailure_noCookieWritten() = runTest {
         val api: WalletApi = mock()
         val store: WebViewCookieStore = mock()
-        whenever(api.bridgeIssue()).thenReturn(BridgeIssueResponse(cookie = "   "))
-
-        val result = createBridge(api, store).openStore()
-
-        assertTrue("expected failure, got $result", result.isFailure)
-        verifyNoInteractions(store)
-    }
-
-    @Test
-    fun openStore_nullCookie_returnsFailure_noCookieWritten() = runTest {
-        val api: WalletApi = mock()
-        val store: WebViewCookieStore = mock()
-        whenever(api.bridgeIssue()).thenReturn(BridgeIssueResponse(cookie = null))
+        whenever(api.bridgeIssue()).thenReturn(successResponse(BridgeIssueData(cookie = "   ")))
 
         val result = createBridge(api, store).openStore()
 
@@ -120,6 +143,4 @@ class StoreEntryBridgeTest {
         assertTrue("expected failure, got $result", result.isFailure)
         verifyNoInteractions(store)
     }
-
-
 }

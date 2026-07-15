@@ -2,7 +2,7 @@ package com.sethy.easypay.data.api
 
 import com.sethy.easypay.data.dto.ApiResponse
 import com.sethy.easypay.data.dto.BalanceResponse
-import com.sethy.easypay.data.dto.BridgeIssueResponse
+import com.sethy.easypay.data.dto.BridgeIssueData
 import com.sethy.easypay.data.dto.BillPaymentRequest
 import com.sethy.easypay.data.dto.BillPaymentResponse
 import com.sethy.easypay.data.dto.SendMoneyRequest
@@ -38,6 +38,6 @@ interface WalletApi {
     @POST("wallet/topup")
     suspend fun topUp(@Body request: TopUpRequest): ApiResponse<TopUpResponse>
 
-    @POST("auth/bridge-issue")
-    suspend fun bridgeIssue(): BridgeIssueResponse
+    @POST("api/bridge/issue")
+    suspend fun bridgeIssue(): ApiResponse<BridgeIssueData>
 }
