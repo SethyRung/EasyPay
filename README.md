@@ -18,7 +18,7 @@ A modern Android wallet demo app built with **Jetpack Compose** and **Material 3
 - **State**: ViewModels with sealed `UiState` / `Event` / `Effect` per screen
 - **DI**: Hilt (`@HiltViewModel`, `@Inject`)
 - **Networking**: Retrofit + OkHttp + Kotlinx Serialization
-- **Auth**: AndroidX Security Crypto for token storage
+- **Auth**: better-auth session token (opaque, 7-day, auto-extended) stored via AndroidX Security Crypto
 - **Mock data**: JSON assets loaded at runtime (toggled via `BuildConfig.USE_MOCK_DATA`)
 
 ## Build
