@@ -4,7 +4,6 @@ import com.sethy.easypay.data.local.AuthTokenManager
 import com.sethy.easypay.data.model.User
 import com.sethy.easypay.data.source.AuthDataSource
 import com.sethy.easypay.data.source.WalletDataSource
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -49,9 +48,6 @@ class DefaultAuthRepository @Inject constructor(
     }
 
     private suspend fun saveTokens(result: com.sethy.easypay.data.source.AuthResult) {
-        tokenManager.saveTokens(result.accessToken, result.refreshToken)
-        tokenManager.setTokenExpiry(
-            System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(15)
-        )
+        tokenManager.saveTokens(result.accessToken)
     }
 }

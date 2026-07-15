@@ -15,6 +15,5 @@ fun UserDto.toUser(balance: Double = 0.0): User = User(
 
 fun AuthResponse.toAuthResult(): AuthResult = AuthResult(
     user = user.toUser(),
-    accessToken = accessToken,
-    refreshToken = refreshToken
+    accessToken = token
 )
