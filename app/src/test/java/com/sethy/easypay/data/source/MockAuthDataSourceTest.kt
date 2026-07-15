@@ -148,14 +148,4 @@ class MockAuthDataSourceTest {
         val ds = createDataSource()
         assertTrue(ds.logout().isSuccess)
     }
-
-    @Test
-    fun `refreshToken returns the seeded demo user`() = runTest {
-        val ds = createDataSource()
-
-        val result = ds.refreshToken("any-token")
-
-        assertTrue(result.isSuccess)
-        assertEquals(seededUser, result.getOrThrow().user)
-    }
 }

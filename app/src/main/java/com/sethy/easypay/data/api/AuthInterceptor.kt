@@ -38,9 +38,8 @@ class AuthInterceptor @Inject constructor(
             .filter { it.isNotEmpty() }
         val apiIndex = segments.indexOf("api")
         val effective = if (apiIndex >= 0) segments.drop(apiIndex + 1) else segments
-        if (effective.size != 2) return false
-        val key = "${effective[0]}/${effective[1]}"
-        return publicPaths.contains(key)
+        val path = effective.joinToString("/")
+        return publicPaths.contains(path)
     }
 
     private fun addAuthHeader(request: Request, token: String? = null): Request {

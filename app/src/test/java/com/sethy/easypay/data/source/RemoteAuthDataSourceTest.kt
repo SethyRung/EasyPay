@@ -23,7 +23,7 @@ class RemoteAuthDataSourceTest {
 
     @Test
     fun `logout returns success on 2xx`() = runTest {
-        whenever(authApi.logout()).thenReturn(Unit)
+        whenever(authApi.signOut()).thenReturn(Unit)
 
         val result = createDataSource().logout()
 
@@ -33,7 +33,7 @@ class RemoteAuthDataSourceTest {
     @Test
     fun `logout returns failure with ApiException on HttpException`() = runTest {
         val errorBody = "Unauthorized".toResponseBody("application/json".toMediaType())
-        whenever(authApi.logout()).thenThrow(
+        whenever(authApi.signOut()).thenThrow(
             HttpException(Response.error<Any>(401, errorBody))
         )
 
@@ -48,7 +48,7 @@ class RemoteAuthDataSourceTest {
 
     @Test
     fun `logout returns failure with NetworkException on IOException`() = runTest {
-        whenever(authApi.logout()).thenAnswer { throw IOException("connection refused") }
+        whenever(authApi.signOut()).thenAnswer { throw IOException("connection refused") }
 
         val result = createDataSource().logout()
 
@@ -60,7 +60,7 @@ class RemoteAuthDataSourceTest {
 
     @Test
     fun `logout propagates unexpected exceptions instead of swallowing them`() = runTest {
-        whenever(authApi.logout()).thenThrow(IllegalStateException("boom"))
+        whenever(authApi.signOut()).thenThrow(IllegalStateException("boom"))
 
         val thrown = runCatching { createDataSource().logout() }
 

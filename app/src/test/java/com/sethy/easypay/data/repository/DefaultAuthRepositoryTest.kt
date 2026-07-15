@@ -36,8 +36,7 @@ class DefaultAuthRepositoryTest {
 
     private val testAuthResult = AuthResult(
         user = testUser,
-        accessToken = "access-token-123",
-        refreshToken = "refresh-token-456"
+        accessToken = "access-token-123"
     )
 
     private fun createRepository() = DefaultAuthRepository(authDataSource, tokenManager, walletDataSource)

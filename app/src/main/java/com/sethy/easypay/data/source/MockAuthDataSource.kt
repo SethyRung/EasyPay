@@ -48,8 +48,7 @@ class MockAuthDataSource(
             Result.success(
                 AuthResult(
                     user = stored.user,
-                    accessToken = "mock_access_token",
-                    refreshToken = "mock_refresh_token"
+                    accessToken = "mock_access_token"
                 )
             )
         } else {
@@ -83,8 +82,7 @@ class MockAuthDataSource(
                 Result.success(
                     AuthResult(
                         user = user,
-                        accessToken = "mock_access_token",
-                        refreshToken = "mock_refresh_token"
+                        accessToken = "mock_access_token"
                     )
                 )
             }
@@ -92,21 +90,6 @@ class MockAuthDataSource(
     }
 
     override suspend fun logout(): Result<Unit> = Result.success(Unit)
-
-    override suspend fun refreshToken(refreshToken: String): Result<AuthResult> {
-        // Mock refresh tokens are not tracked; treat any call as returning the
-        // seeded demo user. Real backends would validate the token here.
-        ensureLoaded()
-        val stored = synchronized(lock) { users.values.firstOrNull() }
-            ?: return Result.failure(InvalidCredentialsException())
-        return Result.success(
-            AuthResult(
-                user = stored.user,
-                accessToken = "mock_access_token",
-                refreshToken = "mock_refresh_token"
-            )
-        )
-    }
 
     companion object {
         /** Password for the demo account seeded from `assets/data/user.json`. */
