@@ -363,6 +363,7 @@ private fun navigateToTab(navController: NavHostController, tab: BottomNavItem) 
     navController.navigate(tabToRoute(tab)) {
         popUpTo(navController.graph.findStartDestination().id) {
             saveState = true
+            inclusive = true
         }
         launchSingleTop = true
         restoreState = true

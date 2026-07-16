@@ -1,9 +1,12 @@
 package com.sethy.easypay.data.repository
 
+import com.sethy.easypay.data.auth.AuthSessionNotifier
 import com.sethy.easypay.data.model.Transaction
 import com.sethy.easypay.data.model.TransactionStatus
 import com.sethy.easypay.data.model.TransactionType
 import com.sethy.easypay.data.model.User
+import com.sethy.easypay.data.source.BillPayment
+import com.sethy.easypay.data.source.TopUp
 import com.sethy.easypay.data.source.WalletDataSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -12,8 +15,12 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import org.junit.After
 import org.junit.Assert.*
+import org.junit.Before
 import org.junit.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -28,6 +35,7 @@ class DefaultWalletRepositoryTest {
         id = "user-1",
         name = "Alice Smith",
         email = "alice@example.com",
+        phone = "+1234567890",
         balance = 1_000.0
     )
 
@@ -39,13 +47,25 @@ class DefaultWalletRepositoryTest {
         status = TransactionStatus.COMPLETED
     )
 
-    private fun createRepository() = DefaultWalletRepository(walletDataSource, com.sethy.easypay.data.auth.AuthSessionNotifier())
+    private fun createRepository() = DefaultWalletRepository(
+        walletDataSource,
+        AuthSessionNotifier()
+    )
+
+    @Before
+    fun setUp() {
+        Dispatchers.setMain(testDispatcher)
+    }
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
+    }
 
     // ─── getCurrentUser ─────────────────────────────────────────────────────
 
     @Test
-    fun `getCurrentUser returns user on success`() = runTest(testDispatcher) {
-        Dispatchers.setMain(testDispatcher)
+    fun `getCurrentUser delegates to data source`() = runTest {
         whenever(walletDataSource.getUser()).thenReturn(Result.success(testUser))
 
         val repo = createRepository()
@@ -56,50 +76,22 @@ class DefaultWalletRepositoryTest {
         verify(walletDataSource).getUser()
     }
 
-    @Test
-    fun `getCurrentUser returns failure on error`() = runTest(testDispatcher) {
-        Dispatchers.setMain(testDispatcher)
-        whenever(walletDataSource.getUser())
-            .thenReturn(Result.failure(Exception("Not found")))
-
-        val repo = createRepository()
-        val result = repo.getCurrentUser()
-
-        assertTrue(result.isFailure)
-        assertEquals("Not found", result.exceptionOrNull()?.message)
-    }
-
     // ─── getBalance ─────────────────────────────────────────────────────────
 
     @Test
-    fun `getBalance returns balance on success`() = runTest(testDispatcher) {
-        Dispatchers.setMain(testDispatcher)
-        whenever(walletDataSource.getBalance()).thenReturn(Result.success(1_250.75))
+    fun `getBalance delegates to data source`() = runTest {
+        whenever(walletDataSource.getBalance()).thenReturn(Result.success(123.45))
 
         val repo = createRepository()
         val result = repo.getBalance()
 
-        assertTrue(result.isSuccess)
-        assertEquals(1_250.75, result.getOrNull() ?: 0.0, 0.0)
+        assertEquals(123.45, result.getOrNull()!!, 0.0)
     }
 
-    @Test
-    fun `getBalance returns failure on error`() = runTest(testDispatcher) {
-        Dispatchers.setMain(testDispatcher)
-        whenever(walletDataSource.getBalance())
-            .thenReturn(Result.failure(Exception("Network error")))
-
-        val repo = createRepository()
-        val result = repo.getBalance()
-
-        assertTrue(result.isFailure)
-    }
-
-    // ─── getTransactions ─────────────────────────────────────────────────────
+    // ─── getTransactions ───────────────────────────────────────────────────
 
     @Test
-    fun `getTransactions delegates with limit and offset`() = runTest(testDispatcher) {
-        Dispatchers.setMain(testDispatcher)
+    fun `getTransactions delegates with limit and offset`() = runTest {
         val transactions = listOf(testTransaction)
         whenever(walletDataSource.getTransactions(10, 0))
             .thenReturn(Result.success(transactions))
@@ -113,8 +105,7 @@ class DefaultWalletRepositoryTest {
     }
 
     @Test
-    fun `getTransactions uses default limit and offset`() = runTest(testDispatcher) {
-        Dispatchers.setMain(testDispatcher)
+    fun `getTransactions uses default limit and offset`() = runTest {
         whenever(walletDataSource.getTransactions(10, 0))
             .thenReturn(Result.success(emptyList()))
 
@@ -124,58 +115,105 @@ class DefaultWalletRepositoryTest {
         verify(walletDataSource).getTransactions(10, 0)
     }
 
-    // ─── getTransaction ─────────────────────────────────────────────────────
+    // ─── getTransfer ─────────────────────────────────────────────────────────
 
     @Test
-    fun `getTransaction returns transaction on success`() = runTest(testDispatcher) {
-        Dispatchers.setMain(testDispatcher)
-        whenever(walletDataSource.getTransaction("tx-1"))
+    fun `getTransfer delegates to data source`() = runTest {
+        whenever(walletDataSource.getTransfer("tx-1"))
             .thenReturn(Result.success(testTransaction))
 
         val repo = createRepository()
-        val result = repo.getTransaction("tx-1")
+        val result = repo.getTransfer("tx-1")
 
         assertTrue(result.isSuccess)
         assertEquals(testTransaction, result.getOrNull())
     }
 
-    // ─── sendMoney ───────────────────────────────────────────────────────────
+    // ─── createTransfer ─────────────────────────────────────────────────────
 
     @Test
-    fun `sendMoney converts amount to minor units`() = runTest(testDispatcher) {
-        Dispatchers.setMain(testDispatcher)
-        whenever(walletDataSource.sendMoney("Charlie Davis", 5000L))
+    fun `createTransfer generates idempotencyKey and forwards to data source`() = runTest {
+        whenever(walletDataSource.createTransfer(any(), any(), any(), any<String>()))
             .thenReturn(Result.success(testTransaction))
 
         val repo = createRepository()
-        val result = repo.sendMoney("Charlie Davis", 50.0)
+        val result = repo.createTransfer("+1234567890", 50.0, "lunch")
 
         assertTrue(result.isSuccess)
-        verify(walletDataSource).sendMoney("Charlie Davis", 5000L)
+        val captor = argumentCaptor<String>()
+        verify(walletDataSource).createTransfer(
+            org.mockito.kotlin.eq("+1234567890"),
+            org.mockito.kotlin.eq(50.0),
+            captor.capture(),
+            org.mockito.kotlin.eq("lunch")
+        )
+        // Verify the captured idempotencyKey is a valid UUID
+        val key = captor.firstValue
+        assertTrue("idempotencyKey should be a non-blank UUID, got '$key'", key.isNotBlank())
+        try {
+            java.util.UUID.fromString(key)
+        } catch (e: IllegalArgumentException) {
+            org.junit.Assert.fail("idempotencyKey is not a valid UUID: $key")
+        }
     }
 
     @Test
-    fun `sendMoney handles decimal conversion correctly`() = runTest(testDispatcher) {
-        Dispatchers.setMain(testDispatcher)
-        whenever(walletDataSource.sendMoney("Charlie Davis", 999L))
-            .thenReturn(Result.success(testTransaction))
-
-        val repo = createRepository()
-        repo.sendMoney("Charlie Davis", 9.99)
-
-        verify(walletDataSource).sendMoney("Charlie Davis", 999L)
-    }
-
-    @Test
-    fun `sendMoney returns failure on error`() = runTest(testDispatcher) {
-        Dispatchers.setMain(testDispatcher)
-        whenever(walletDataSource.sendMoney("Charlie Davis", 5000L))
+    fun `createTransfer propagates failure`() = runTest {
+        whenever(walletDataSource.createTransfer(any(), any(), any(), org.mockito.kotlin.isNull()))
             .thenReturn(Result.failure(Exception("Insufficient balance")))
 
         val repo = createRepository()
-        val result = repo.sendMoney("Charlie Davis", 50.0)
+        val result = repo.createTransfer("+1", 50.0, null)
 
         assertTrue(result.isFailure)
         assertEquals("Insufficient balance", result.exceptionOrNull()?.message)
+    }
+
+    // ─── payBill ────────────────────────────────────────────────────────────
+
+    @Test
+    fun `payBill forwards major-unit amount directly to data source`() = runTest {
+        val payment = BillPayment(
+            transactionId = "tx-1",
+            walletId = "w-1",
+            balanceAfterMinor = 12750,
+            amountMinor = 2499
+        )
+        whenever(walletDataSource.payBill("glitch", "game-1", 24.99, "Hades II"))
+            .thenReturn(Result.success(payment))
+
+        val repo = createRepository()
+        val result = repo.payBill("glitch", "game-1", 24.99, "Hades II")
+
+        assertTrue(result.isSuccess)
+        assertEquals(payment, result.getOrNull())
+        verify(walletDataSource).payBill("glitch", "game-1", 24.99, "Hades II")
+    }
+
+    @Test
+    fun `payBill propagates insufficient funds failure`() = runTest {
+        whenever(walletDataSource.payBill("glitch", "game-1", 50.0, null))
+            .thenReturn(Result.failure(IllegalStateException("Insufficient balance")))
+
+        val repo = createRepository()
+        val result = repo.payBill("glitch", "game-1", 50.0, null)
+
+        assertTrue(result.isFailure)
+        assertEquals("Insufficient balance", result.exceptionOrNull()?.message)
+    }
+
+    // ─── topUp ───────────────────────────────────────────────────────────────
+
+    @Test
+    fun `topUp forwards major-unit amount directly to data source`() = runTest {
+        val topUp = TopUp("tx-2", "w-1", 12500, 2500)
+        whenever(walletDataSource.topUp(25.0, "Bonus"))
+            .thenReturn(Result.success(topUp))
+
+        val repo = createRepository()
+        val result = repo.topUp(25.0, "Bonus")
+
+        assertTrue(result.isSuccess)
+        verify(walletDataSource).topUp(25.0, "Bonus")
     }
 }

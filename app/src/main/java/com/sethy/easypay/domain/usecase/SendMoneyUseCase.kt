@@ -7,6 +7,9 @@ import javax.inject.Inject
 class SendMoneyUseCase @Inject constructor(
     private val walletRepository: WalletRepository
 ) {
-    suspend operator fun invoke(recipient: String, amount: Double): Result<Transaction> =
-        walletRepository.sendMoney(recipient, amount)
+    suspend operator fun invoke(
+        recipientPhone: String,
+        amount: Double,
+        note: String? = null
+    ): Result<Transaction> = walletRepository.createTransfer(recipientPhone, amount, note)
 }

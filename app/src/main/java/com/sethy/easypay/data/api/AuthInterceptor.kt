@@ -16,8 +16,7 @@ class AuthInterceptor @Inject constructor(
 
     private val publicPaths: Set<String> = setOf(
         "auth/sign-in/email",
-        "auth/sign-up/email",
-        "auth/get-session"
+        "auth/sign-up/email"
     )
 
     override fun intercept(chain: Interceptor.Chain): Response {

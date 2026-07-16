@@ -12,7 +12,6 @@ class TopUpUseCase @Inject constructor(
         note: String? = null
     ): Result<TopUp> {
         require(amountMajor > 0) { "Top-up amount must be positive" }
-        val amountMinor = (amountMajor * 100).toLong()
-        return walletRepository.topUp(amountMinor, note)
+        return walletRepository.topUp(amountMajor, note)
     }
 }

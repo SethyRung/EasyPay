@@ -96,4 +96,26 @@ class BaseRepositoryTest {
         assertFalse("notifier should not emit on SUCCESS", emitted)
         job.cancel()
     }
+
+    @Test
+    fun `safeApiCall fails SUCCESS-with-null-data with a useful message instead of the status message`() = runTest {
+        val notifier = AuthSessionNotifier()
+        val repo = TestableRepository(notifier)
+
+        val result = repo.callIt { errorEnvelope("SUCCESS") }
+        advanceUntilIdle()
+
+        assertTrue("expected failure for SUCCESS/null data, got $result", result.isFailure)
+        val ex = result.exceptionOrNull()
+        assertTrue("expected ApiException, got ${ex!!::class.simpleName}", ex is BaseRepository.ApiException)
+        val message = ex.message.orEmpty()
+        assertFalse(
+            "fallback message must not echo the misleading backend 'Success' status text, got '$message'",
+            message.equals("Success", ignoreCase = true)
+        )
+        assertTrue(
+            "fallback message should mention 'no data', got '$message'",
+            message.contains("no data", ignoreCase = true)
+        )
+    }
 }

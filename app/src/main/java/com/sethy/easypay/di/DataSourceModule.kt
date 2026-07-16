@@ -30,11 +30,12 @@ object DataSourceModule {
         @ApplicationContext context: Context,
         walletApi: WalletApi,
         notificationApi: NotificationApi,
+        authApi: AuthApi,
         authSessionNotifier: AuthSessionNotifier
     ): WalletDataSource = if (BuildConfig.USE_MOCK_DATA) {
         MockWalletDataSource(context)
     } else {
-        RemoteWalletDataSource(walletApi, notificationApi, authSessionNotifier)
+        RemoteWalletDataSource(walletApi, notificationApi, authApi, authSessionNotifier)
     }
 
     @Provides

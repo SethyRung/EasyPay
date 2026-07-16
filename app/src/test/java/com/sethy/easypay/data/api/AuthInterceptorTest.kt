@@ -38,8 +38,11 @@ class AuthInterceptorTest {
     }
 
     @Test
-    fun `isPublicPath matches auth get-session under api prefix`() {
-        assertTrue(interceptor.isPublicPath("http://10.0.2.2:8080/api/auth/get-session".toHttpUrl()))
+    fun `isPublicPath does NOT match auth get-session under api prefix`() {
+        assertFalse(
+            "get-session is not public — it must carry the bearer token so the server returns the actual session",
+            interceptor.isPublicPath("http://10.0.2.2:8080/api/auth/get-session".toHttpUrl())
+        )
     }
 
     @Test
@@ -109,6 +112,45 @@ class AuthInterceptorTest {
             verify(chain).proceed(capture())
         }.firstValue
         assertEquals("Bearer access-1", forwarded.header("Authorization"))
+    }
+
+    @Test
+    fun `get-session gets Bearer token from cache so the backend returns the actual session`() = runTest {
+        whenever(tokenManager.getAccessTokenSync()).thenReturn("access-1")
+        val chain = mockChain(
+            url = "http://10.0.2.2:8080/api/auth/get-session".toHttpUrl(),
+            responseBody = "{}"
+        )
+
+        interceptor.intercept(chain)
+
+        val forwarded = argumentCaptor<Request>().apply {
+            verify(chain).proceed(capture())
+        }.firstValue
+        assertEquals(
+            "get-session must carry the bearer token, otherwise the server returns SUCCESS/null and the Profile screen shows 'Success'",
+            "Bearer access-1",
+            forwarded.header("Authorization")
+        )
+    }
+
+    @Test
+    fun `get-session forwards without token when none is cached`() = runTest {
+        whenever(tokenManager.getAccessTokenSync()).thenReturn(null)
+        val chain = mockChain(
+            url = "http://10.0.2.2:8080/api/auth/get-session".toHttpUrl(),
+            responseBody = "{}"
+        )
+
+        interceptor.intercept(chain)
+
+        val forwarded = argumentCaptor<Request>().apply {
+            verify(chain).proceed(capture())
+        }.firstValue
+        assertNull(
+            "with no cached token, the request goes out without an Authorization header so the cold-start session probe can land on Login",
+            forwarded.header("Authorization")
+        )
     }
 
     private fun mockChain(

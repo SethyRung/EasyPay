@@ -5,6 +5,7 @@ import com.sethy.easypay.data.dto.BillPaymentResponse
 import com.sethy.easypay.data.dto.NotificationResponse
 import com.sethy.easypay.data.dto.TopUpResponse
 import com.sethy.easypay.data.dto.TransactionResponse
+import com.sethy.easypay.data.dto.TransferReceiptDto
 import com.sethy.easypay.data.model.Notification
 import com.sethy.easypay.data.model.NotificationType
 import com.sethy.easypay.data.model.Transaction
@@ -25,6 +26,17 @@ fun TransactionResponse.toTransaction(): Transaction = Transaction(
     timestamp = parseDateToMillis(createdAt),
     avatarUrl = null,
     description = description,
+    status = TransactionStatus.COMPLETED
+)
+
+fun TransferReceiptDto.toTransaction(): Transaction = Transaction(
+    id = id,
+    recipientName = recipientUserId,
+    amount = amount,
+    type = TransactionType.SENT,
+    timestamp = parseDateToMillis(createdAt),
+    avatarUrl = null,
+    description = note ?: "Transfer $id",
     status = TransactionStatus.COMPLETED
 )
 

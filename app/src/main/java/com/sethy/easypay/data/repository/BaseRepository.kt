@@ -18,7 +18,12 @@ abstract class BaseRepository(private val authSessionNotifier: AuthSessionNotifi
                 if (data != null) {
                     Result.success(data)
                 } else {
-                    Result.failure(ApiException(response.status.message, response.status.code))
+                    Result.failure(
+                        ApiException(
+                            message = "Server returned a successful response with no data",
+                            code = response.status.code
+                        )
+                    )
                 }
             } else {
                 if (response.status.code == "UNAUTHORIZED") {

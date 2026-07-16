@@ -62,7 +62,7 @@ class MockWalletDataSource @Inject constructor(
         return Result.success(paginated)
     }
 
-    override suspend fun getTransaction(id: String): Result<Transaction> {
+    override suspend fun getTransfer(id: String): Result<Transaction> {
         ensureLoaded()
         val transaction = transactions.find { it.id == id }
         return if (transaction != null) {
@@ -72,18 +72,22 @@ class MockWalletDataSource @Inject constructor(
         }
     }
 
-    override suspend fun sendMoney(recipient: String, amountMinor: Long): Result<Transaction> {
+    override suspend fun createTransfer(
+        recipientPhone: String,
+        amount: Double,
+        idempotencyKey: String,
+        note: String?
+    ): Result<Transaction> {
         ensureLoaded()
-        val amount = amountMinor / 100.0
         if (amount > balance) {
             return Result.failure(IllegalStateException("Insufficient balance"))
         }
         val transaction = Transaction(
             id = UUID.randomUUID().toString(),
-            recipientName = recipient,
+            recipientName = recipientPhone,
             amount = amount,
             type = TransactionType.SENT,
-            description = "Sent to $recipient",
+            description = "Sent to $recipientPhone",
             status = TransactionStatus.COMPLETED
         )
         balance -= amount
@@ -91,7 +95,7 @@ class MockWalletDataSource @Inject constructor(
         val notification = Notification(
             id = transaction.id,
             title = "Money sent",
-            body = "You sent ${"%.2f".format(amount)} to $recipient",
+            body = "You sent ${"%.2f".format(amount)} to $recipientPhone",
             type = NotificationType.INFO,
             timestamp = transaction.timestamp,
             isRead = false
@@ -103,11 +107,10 @@ class MockWalletDataSource @Inject constructor(
     override suspend fun payBill(
         billerCode: String,
         accountNumber: String,
-        amountMinor: Long,
+        amount: Double,
         note: String?
     ): Result<BillPayment> {
         ensureLoaded()
-        val amount = amountMinor / 100.0
         if (amount > balance) {
             return Result.failure(IllegalStateException("Insufficient balance"))
         }
@@ -126,14 +129,13 @@ class MockWalletDataSource @Inject constructor(
                 transactionId = transaction.id,
                 walletId = "mock-wallet",
                 balanceAfterMinor = (balance * 100).toLong(),
-                amountMinor = amountMinor
+                amountMinor = (amount * 100).toLong()
             )
         )
     }
 
-    override suspend fun topUp(amountMinor: Long, note: String?): Result<TopUp> {
+    override suspend fun topUp(amount: Double, note: String?): Result<TopUp> {
         ensureLoaded()
-        val amount = amountMinor / 100.0
         balance += amount
         val transaction = Transaction(
             id = UUID.randomUUID().toString(),
@@ -149,7 +151,7 @@ class MockWalletDataSource @Inject constructor(
                 transactionId = transaction.id,
                 walletId = "mock-wallet",
                 balanceAfterMinor = (balance * 100).toLong(),
-                amountMinor = amountMinor
+                amountMinor = (amount * 100).toLong()
             )
         )
     }

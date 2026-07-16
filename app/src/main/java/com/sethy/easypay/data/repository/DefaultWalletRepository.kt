@@ -6,6 +6,7 @@ import com.sethy.easypay.data.model.User
 import com.sethy.easypay.data.source.BillPayment
 import com.sethy.easypay.data.source.TopUp
 import com.sethy.easypay.data.source.WalletDataSource
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -24,21 +25,27 @@ class DefaultWalletRepository @Inject constructor(
         offset: Int
     ): Result<List<Transaction>> = walletDataSource.getTransactions(limit, offset)
 
-    override suspend fun getTransaction(id: String): Result<Transaction> =
-        walletDataSource.getTransaction(id)
+    override suspend fun getTransfer(id: String): Result<Transaction> =
+        walletDataSource.getTransfer(id)
 
-    override suspend fun sendMoney(recipient: String, amount: Double): Result<Transaction> {
-        val amountMinor = (amount * 100).toLong()
-        return walletDataSource.sendMoney(recipient, amountMinor)
-    }
+    override suspend fun createTransfer(
+        recipientPhone: String,
+        amount: Double,
+        note: String?
+    ): Result<Transaction> = walletDataSource.createTransfer(
+        recipientPhone = recipientPhone,
+        amount = amount,
+        idempotencyKey = UUID.randomUUID().toString(),
+        note = note
+    )
 
     override suspend fun payBill(
         billerCode: String,
         accountNumber: String,
-        amountMinor: Long,
+        amount: Double,
         note: String?
-    ): Result<BillPayment> = walletDataSource.payBill(billerCode, accountNumber, amountMinor, note)
+    ): Result<BillPayment> = walletDataSource.payBill(billerCode, accountNumber, amount, note)
 
-    override suspend fun topUp(amountMinor: Long, note: String?): Result<TopUp> =
-        walletDataSource.topUp(amountMinor, note)
+    override suspend fun topUp(amount: Double, note: String?): Result<TopUp> =
+        walletDataSource.topUp(amount, note)
 }

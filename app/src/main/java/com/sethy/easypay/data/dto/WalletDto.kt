@@ -29,16 +29,39 @@ data class TransactionsListResponse(
 )
 
 @Serializable
-data class SendMoneyRequest(
-    val recipient: String,
-    val amountMinor: Long
+data class CreateTransferDto(
+    val recipientPhone: String,
+    val amount: Double,
+    val idempotencyKey: String,
+    val note: String? = null
+)
+
+@Serializable
+data class TransferReceiptDto(
+    val id: String,
+    val senderUserId: String,
+    val recipientUserId: String,
+    val amountMinor: Long,
+    val amount: Double,
+    val feeMinor: Long,
+    val fee: Double,
+    val totalDebitMinor: Long,
+    val totalDebit: Double,
+    val status: String,
+    val idempotencyKey: String,
+    val note: String? = null,
+    val createdAt: String,
+    val senderBalanceBeforeMinor: Long,
+    val senderBalanceAfterMinor: Long,
+    val recipientBalanceBeforeMinor: Long,
+    val recipientBalanceAfterMinor: Long
 )
 
 @Serializable
 data class BillPaymentRequest(
     val billerCode: String,
     val accountNumber: String,
-    val amountMinor: Long,
+    val amount: Double,
     val note: String? = null
 )
 
@@ -52,7 +75,7 @@ data class BillPaymentResponse(
 
 @Serializable
 data class TopUpRequest(
-    val amountMinor: Long,
+    val amount: Double,
     val note: String? = null
 )
 

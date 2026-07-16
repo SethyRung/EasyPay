@@ -9,13 +9,17 @@ interface WalletRepository {
     suspend fun getCurrentUser(): Result<User>
     suspend fun getBalance(): Result<Double>
     suspend fun getTransactions(limit: Int = 10, offset: Int = 0): Result<List<Transaction>>
-    suspend fun getTransaction(id: String): Result<Transaction>
-    suspend fun sendMoney(recipient: String, amount: Double): Result<Transaction>
+    suspend fun getTransfer(id: String): Result<Transaction>
+    suspend fun createTransfer(
+        recipientPhone: String,
+        amount: Double,
+        note: String?
+    ): Result<Transaction>
     suspend fun payBill(
         billerCode: String,
         accountNumber: String,
-        amountMinor: Long,
+        amount: Double,
         note: String?
     ): Result<BillPayment>
-    suspend fun topUp(amountMinor: Long, note: String?): Result<TopUp>
+    suspend fun topUp(amount: Double, note: String?): Result<TopUp>
 }

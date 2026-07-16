@@ -13,7 +13,7 @@ class PayBillUseCase @Inject constructor(
         amountMajor: Double,
         note: String?
     ): Result<BillPayment> {
-        val amountMinor = (amountMajor * 100).toLong()
-        return walletRepository.payBill(billerCode, accountNumber, amountMinor, note)
+        require(amountMajor > 0) { "Bill amount must be positive" }
+        return walletRepository.payBill(billerCode, accountNumber, amountMajor, note)
     }
 }
