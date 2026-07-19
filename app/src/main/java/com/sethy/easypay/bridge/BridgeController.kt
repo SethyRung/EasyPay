@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
@@ -27,7 +28,7 @@ class BridgeController @Inject constructor(
     private val getCurrentUser: GetCurrentUserUseCase,
     private val getBalance: GetBalanceUseCase,
     private val payBill: PayBillUseCase,
-    val topUp: TopUpUseCase,
+    private val topUp: TopUpUseCase,
     private val handlerFactory: BridgeHandlerFactory
 ) {
 
@@ -56,9 +57,25 @@ class BridgeController @Inject constructor(
 
     fun attach(webView: WebView) {
         if (handler != null) return
-        val bridge = handlerFactory.create().also { handler = it }
-        bridge.attach(webView)
+        try {
+            val bridge = handlerFactory.create().also { handler = it }
+            bridge.attach(webView)
 
+            registerHandlers(bridge)
+
+            _status.value = BridgeStatus.Online
+            if (_sessionStartedAt.value == null) {
+                _sessionStartedAt.value = System.currentTimeMillis()
+            }
+        } catch (t: Throwable) {
+            android.util.Log.e("BridgeController", "attach failed", t)
+            handler?.detach()
+            handler = null
+            _status.value = BridgeStatus.Offline(t.message ?: t::class.java.simpleName)
+        }
+    }
+
+    private fun registerHandlers(bridge: IBridgeHandler) {
         bridge.registerBridger(GET_USER) { _, callback ->
             record(BridgeEvent.Received(GET_USER, null))
             scope.launch {
@@ -68,9 +85,8 @@ class BridgeController @Inject constructor(
                     record(BridgeEvent.Replied(GET_USER, true))
                     callback?.invoke(payload)
                 } else {
-                    val err = """{"ok":false,"error":{"code":"UNAUTHENTICATED","message":"No user"}}"""
                     record(BridgeEvent.Failed(GET_USER, "No user"))
-                    callback?.invoke(err)
+                    callback?.invoke(failurePayload(GET_USER, "UNAUTHENTICATED", "No user"))
                 }
             }
         }
@@ -95,6 +111,15 @@ class BridgeController @Inject constructor(
 
         bridge.registerBridger(REQUEST_PAYMENT) { data, callback ->
             record(BridgeEvent.Received(REQUEST_PAYMENT, data))
+            if (_pendingPayment.value != null) {
+                android.util.Log.w(
+                    "BridgeController",
+                    "Ignoring REQUEST_PAYMENT: another payment is already in flight"
+                )
+                record(BridgeEvent.Failed(REQUEST_PAYMENT, "Another payment in progress"))
+                callback?.invoke(failurePayload(REQUEST_PAYMENT, "BUSY", "Another payment in progress"))
+                return@registerBridger
+            }
             val request = parsePaymentRequest(data)
             if (request == null) {
                 callback?.invoke(failurePayload(REQUEST_PAYMENT, "INVALID", "Bad payload"))
@@ -114,11 +139,6 @@ class BridgeController @Inject constructor(
         bridge.registerBridger(CLOSE) { _, callback ->
             record(BridgeEvent.Received(CLOSE, null))
             callback?.invoke("""{"ok":true}""")
-        }
-
-        _status.value = BridgeStatus.Online
-        if (_sessionStartedAt.value == null) {
-            _sessionStartedAt.value = System.currentTimeMillis()
         }
     }
 
@@ -198,39 +218,8 @@ class BridgeController @Inject constructor(
     private fun record(event: BridgeEvent) {
         scope.launch {
             _events.emit(event)
-            val updated = (_eventLog.value + event).takeLast(MAX_LOG_ENTRIES)
-            _eventLog.value = updated
+            _eventLog.update { (it + event).takeLast(MAX_LOG_ENTRIES) }
         }
-    }
-
-    private fun encodeBridgeUser(user: User): String =
-        """{"id":"${user.id}","name":"${escape(user.name)}","email":"${escape(user.email)}"}"""
-
-    private fun encodeBridgeBalance(balance: Double): String {
-        val minor = (balance * 100).toLong()
-        return """{"currency":"USD","balanceMinor":$minor,"balance":$balance}"""
-    }
-
-    private fun encodePaymentSuccess(
-        request: BridgePaymentRequest,
-        balanceAfterMinor: Long,
-        transactionId: String
-    ): String {
-        val amountMinor = (request.amountMajor * 100).toLong()
-        return buildString {
-            append('{')
-            append(""""ok":true,""")
-            append(""""merchantRef":"${escape(request.merchantRef)}",""")
-            append(""""transactionId":"${escape(transactionId)}",""")
-            append(""""amountMinor":$amountMinor,""")
-            append(""""balanceAfterMinor":$balanceAfterMinor""")
-            append('}')
-        }
-    }
-
-    private fun failurePayload(method: String, code: String, message: String?): String {
-        val safe = message?.let { escape(it) } ?: "Unknown error"
-        return """{"ok":false,"error":{"code":"$code","message":"$safe"}}"""
     }
 
     private fun classifyPaymentFailure(error: Throwable): Pair<String, String> {
@@ -267,7 +256,11 @@ class BridgeController @Inject constructor(
 
     private fun parsePaymentItems(array: JSONArray): List<BridgePaymentItem> = buildList {
         for (i in 0 until array.length()) {
-            val obj = array.optJSONObject(i) ?: continue
+            val obj = array.optJSONObject(i)
+            if (obj == null) {
+                android.util.Log.w("BridgeController", "Skipping malformed item at index $i")
+                continue
+            }
             add(
                 BridgePaymentItem(
                     gameId = obj.optString("gameId"),
@@ -280,9 +273,6 @@ class BridgeController @Inject constructor(
         }
     }
 
-    private fun escape(value: String): String =
-        value.replace("\\", "\\\\").replace("\"", "\\\"")
-
     companion object {
         const val BRIDGE_NAME = "WKWebViewJavascriptBridge"
 
@@ -293,14 +283,52 @@ class BridgeController @Inject constructor(
         const val CLOSE = "wallet.close"
 
         const val MAX_LOG_ENTRIES = 200
-    }
-}
 
-sealed interface PaymentSheetState {
-    data object Hidden : PaymentSheetState
-    data class Confirming(val request: BridgePaymentRequest) : PaymentSheetState
-    data class Processing(val request: BridgePaymentRequest) : PaymentSheetState
-    data class Success(val request: BridgePaymentRequest) : PaymentSheetState
-    data class InsufficientFunds(val request: BridgePaymentRequest) : PaymentSheetState
-    data class Error(val request: BridgePaymentRequest, val message: String) : PaymentSheetState
+        // Exposed as `internal` purely so the JSON-encoding unit tests in
+        // the same module can call them directly without going through the
+        // suspend / WebView plumbing of the public handler flow.
+
+        internal fun encodeBridgeUser(user: User): String =
+            JSONObject()
+                .put("id", user.id)
+                .put("name", user.name)
+                .put("email", user.email)
+                .toString()
+
+        internal fun encodeBridgeBalance(balance: Double): String {
+            val minor = (balance * 100).toLong()
+            return JSONObject()
+                .put("currency", "USD")
+                .put("balanceMinor", minor)
+                .put("balance", balance)
+                .toString()
+        }
+
+        internal fun encodePaymentSuccess(
+            request: BridgePaymentRequest,
+            balanceAfterMinor: Long,
+            transactionId: String
+        ): String {
+            val amountMinor = (request.amountMajor * 100).toLong()
+            return JSONObject()
+                .put("ok", true)
+                .put("merchantRef", request.merchantRef)
+                .put("transactionId", transactionId)
+                .put("amountMinor", amountMinor)
+                .put("balanceAfterMinor", balanceAfterMinor)
+                .toString()
+        }
+
+        internal fun failurePayload(method: String, code: String, message: String?): String =
+            JSONObject()
+                .put("ok", false)
+                .put(
+                    "error",
+                    JSONObject()
+                        .put("method", method)
+                        .put("code", code)
+                        .put("message", message ?: "Unknown error")
+                )
+                .toString()
+    }
 }

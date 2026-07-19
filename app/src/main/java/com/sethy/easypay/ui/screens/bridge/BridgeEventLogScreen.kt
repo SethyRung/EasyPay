@@ -18,6 +18,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -98,7 +99,7 @@ fun BridgeEventLogScreen(
             ) {
                 items(
                     items = events.asReversed(),
-                    key = { it.timestampMillis.toString() + it.method + it.hashCode() }
+                    key = { it.id }
                 ) { event ->
                     EventRow(event = event, timeFormat = timeFormat)
                     androidx.compose.material3.HorizontalDivider(color = Hairline)
@@ -189,10 +190,6 @@ private fun IconDot(icon: ImageVector, tint: Color) {
         )
     }
 }
-
-@androidx.compose.runtime.Composable
-private fun remember(calculation: () -> SimpleDateFormat): SimpleDateFormat =
-    androidx.compose.runtime.remember(Unit) { calculation() }
 
 @Preview
 @Composable

@@ -8,15 +8,14 @@ import javax.inject.Singleton
 
 fun interface BridgeHandlerFactory {
     fun create(): IBridgeHandler
-
-    companion object {
-        val Default: BridgeHandlerFactory = BridgeHandlerFactory {
-            JsBridgeHandler().also { WebJsBridge.setBridgeName(BridgeController.BRIDGE_NAME) }
-        }
-    }
 }
 
 @Singleton
 class DefaultBridgeHandlerFactory @Inject constructor() : BridgeHandlerFactory {
-    override fun create(): IBridgeHandler = BridgeHandlerFactory.Default.create()
+
+    init {
+        WebJsBridge.setBridgeName(BridgeController.BRIDGE_NAME)
+    }
+
+    override fun create(): IBridgeHandler = JsBridgeHandler()
 }

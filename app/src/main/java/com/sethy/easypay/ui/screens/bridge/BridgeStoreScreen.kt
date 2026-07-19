@@ -26,9 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -214,57 +212,78 @@ private fun BridgeWebView(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    var webViewRef by remember { mutableStateOf<WebView?>(null) }
+    val webView = remember {
+        WebView(context).apply {
+            setBackgroundColor(android.graphics.Color.TRANSPARENT)
+            settings.apply {
+                javaScriptEnabled = true
+                domStorageEnabled = true
+                cacheMode = WebSettings.LOAD_DEFAULT
+                allowFileAccess = false
+                @Suppress("DEPRECATION")
+                setAllowFileAccessFromFileURLs(false)
+                @Suppress("DEPRECATION")
+                setAllowUniversalAccessFromFileURLs(false)
+                allowContentAccess = false
+                mediaPlaybackRequiresUserGesture = false
+            }
+            CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
+            webViewClient = object : android.webkit.WebViewClient() {
+                override fun onPageFinished(view: WebView?, url: String?) {
+                    onLoaded()
+                }
+
+                override fun onReceivedError(
+                    view: WebView?,
+                    request: android.webkit.WebResourceRequest?,
+                    error: android.webkit.WebResourceError?
+                ) {
+                    val code = error?.errorCode ?: -1
+                    val desc = error?.description?.toString() ?: "Unknown error"
+                    val url = request?.url?.toString() ?: "?"
+                    android.util.Log.w(
+                        "BridgeStoreScreen",
+                        "WebView error code=$code url=$url desc=$desc"
+                    )
+                    if (request?.isForMainFrame != false) {
+                        onError("$desc ($code)")
+                    }
+                }
+
+                override fun onReceivedHttpError(
+                    view: WebView?,
+                    request: android.webkit.WebResourceRequest?,
+                    errorResponse: android.webkit.WebResourceResponse?
+                ) {
+                    val code = errorResponse?.statusCode ?: -1
+                    val url = request?.url?.toString() ?: "?"
+                    android.util.Log.w(
+                        "BridgeStoreScreen",
+                        "WebView HTTP error code=$code url=$url"
+                    )
+                    if (request?.isForMainFrame != false && code in 400..599) {
+                        onError("HTTP $code")
+                    }
+                }
+            }
+            bridgeController.attach(this)
+        }
+    }
 
     AndroidView(
         modifier = modifier,
-        factory = { ctx ->
-            WebView(ctx).apply {
-                setBackgroundColor(android.graphics.Color.TRANSPARENT)
-                settings.apply {
-                    javaScriptEnabled = true
-                    domStorageEnabled = true
-                    cacheMode = WebSettings.LOAD_DEFAULT
-                    allowFileAccess = false
-                    @Suppress("DEPRECATION")
-                    setAllowFileAccessFromFileURLs(false)
-                    @Suppress("DEPRECATION")
-                    setAllowUniversalAccessFromFileURLs(false)
-                    allowContentAccess = false
-                    mediaPlaybackRequiresUserGesture = false
-                }
-                CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
-                webViewClient = object : android.webkit.WebViewClient() {
-                    override fun onPageFinished(view: WebView?, url: String?) {
-                        onLoaded()
-                    }
-
-                    override fun onReceivedError(
-                        view: WebView?,
-                        errorCode: Int,
-                        description: String?,
-                        failingUrl: String?
-                    ) {
-                        onError(description ?: "Load error ($errorCode)")
-                    }
-                }
-                bridgeController.attach(this)
-                webViewRef = this
+        factory = { webView },
+        update = { wv ->
+            if (url.isNotBlank() && wv.url != url) {
+                wv.loadUrl(url)
             }
         }
     )
 
-    LaunchedEffect(webViewRef, url) {
-        val wv = webViewRef
-        if (wv != null && url.isNotBlank() && wv.url != url) {
-            wv.loadUrl(url)
-        }
-    }
-
-    DisposableEffect(webViewRef) {
+    DisposableEffect(Unit) {
         onDispose {
             bridgeController.detach()
-            webViewRef?.destroy()
+            webView.destroy()
         }
     }
 }

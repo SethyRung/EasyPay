@@ -9,23 +9,27 @@ sealed interface BridgeStatus {
 sealed interface BridgeEvent {
     val method: String
     val timestampMillis: Long
+    val id: Long
 
     data class Received(
         override val method: String,
         val payload: String?,
-        override val timestampMillis: Long = System.currentTimeMillis()
+        override val timestampMillis: Long = System.currentTimeMillis(),
+        override val id: Long = System.nanoTime()
     ) : BridgeEvent
 
     data class Replied(
         override val method: String,
         val ok: Boolean,
-        override val timestampMillis: Long = System.currentTimeMillis()
+        override val timestampMillis: Long = System.currentTimeMillis(),
+        override val id: Long = System.nanoTime()
     ) : BridgeEvent
 
     data class Failed(
         override val method: String,
         val reason: String,
-        override val timestampMillis: Long = System.currentTimeMillis()
+        override val timestampMillis: Long = System.currentTimeMillis(),
+        override val id: Long = System.nanoTime()
     ) : BridgeEvent
 }
 
@@ -58,3 +62,12 @@ data class BridgePaymentRequest(
     val note: String,
     val items: List<BridgePaymentItem>
 )
+
+sealed interface PaymentSheetState {
+    data object Hidden : PaymentSheetState
+    data class Confirming(val request: BridgePaymentRequest) : PaymentSheetState
+    data class Processing(val request: BridgePaymentRequest) : PaymentSheetState
+    data class Success(val request: BridgePaymentRequest) : PaymentSheetState
+    data class InsufficientFunds(val request: BridgePaymentRequest) : PaymentSheetState
+    data class Error(val request: BridgePaymentRequest, val message: String) : PaymentSheetState
+}

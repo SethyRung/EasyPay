@@ -21,6 +21,7 @@ ksp = "2.3.9"
 turbine = "1.1.0"
 mockitoKotlin = "5.4.0"
 jsbridge = "1.0.2"
+orgJson = "20240303"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -58,6 +59,7 @@ hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.r
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
 mockito-kotlin = { group = "org.mockito.kotlin", name = "mockito-kotlin", version.ref = "mockitoKotlin" }
 rdsunhy-jsbridge = { group = "io.github.rdsunhy", name = "component-jsbridge", version.ref = "jsbridge" }
+org-json = { group = "org.json", name = "json", version.ref = "orgJson" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
