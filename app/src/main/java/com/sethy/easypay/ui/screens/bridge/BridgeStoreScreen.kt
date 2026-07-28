@@ -41,6 +41,7 @@ import com.composables.icons.lucide.Check
 import com.composables.icons.lucide.Loader
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.TriangleAlert
+import com.sethy.easypay.bridge.BridgeConsumeHandle
 import com.sethy.easypay.bridge.BridgeController
 import com.sethy.easypay.bridge.BridgeStatus
 import com.sethy.easypay.bridge.PaymentSheetState
@@ -68,7 +69,7 @@ fun BridgeStoreScreen(
     modifier: Modifier = Modifier
 ) {
     val status by viewModel.status.collectAsStateWithLifecycle()
-    val storeUrl by viewModel.storeUrl.collectAsStateWithLifecycle()
+    val consumeHandle by viewModel.consumeHandle.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
     val paymentSheetState by viewModel.paymentSheetState.collectAsStateWithLifecycle()
@@ -90,7 +91,8 @@ fun BridgeStoreScreen(
                 .background(Canvas)
         ) {
             BridgeWebView(
-                url = storeUrl,
+                url = consumeHandle?.consumeUrl.orEmpty(),
+                body = consumeHandle?.postBody ?: ByteArray(0),
                 onLoaded = { viewModel.onLoaded() },
                 onError = { viewModel.onLoadError(it) },
                 bridgeController = viewModel.bridgeController,
@@ -206,6 +208,7 @@ fun BridgeStoreScreen(
 @Composable
 private fun BridgeWebView(
     url: String,
+    body: ByteArray,
     onLoaded: () -> Unit,
     onError: (String) -> Unit,
     bridgeController: BridgeController,
@@ -275,7 +278,7 @@ private fun BridgeWebView(
         factory = { webView },
         update = { wv ->
             if (url.isNotBlank() && wv.url != url) {
-                wv.loadUrl(url)
+                wv.postUrl(url, body)
             }
         }
     )

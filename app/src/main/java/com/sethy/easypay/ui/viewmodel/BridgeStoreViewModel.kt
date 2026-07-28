@@ -2,6 +2,7 @@ package com.sethy.easypay.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sethy.easypay.bridge.BridgeConsumeHandle
 import com.sethy.easypay.bridge.BridgeController
 import com.sethy.easypay.bridge.BridgeStatus
 import com.sethy.easypay.bridge.PaymentSheetState
@@ -22,8 +23,8 @@ class BridgeStoreViewModel @Inject constructor(
     val status: StateFlow<BridgeStatus> = bridgeController.status
     val paymentSheetState: StateFlow<PaymentSheetState> = bridgeController.paymentSheetState
 
-    private val _storeUrl = MutableStateFlow("")
-    val storeUrl: StateFlow<String> = _storeUrl.asStateFlow()
+    private val _consumeHandle = MutableStateFlow<BridgeConsumeHandle?>(null)
+    val consumeHandle: StateFlow<BridgeConsumeHandle?> = _consumeHandle.asStateFlow()
 
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -44,8 +45,8 @@ class BridgeStoreViewModel @Inject constructor(
             _errorMessage.value = null
 
             storeEntryBridge.openStore()
-                .onSuccess { host ->
-                    _storeUrl.value = host
+                .onSuccess { handle ->
+                    _consumeHandle.value = handle
                 }
                 .onFailure { e ->
                     _isLoading.value = false
