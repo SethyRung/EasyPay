@@ -26,11 +26,13 @@ android {
         debug {
             buildConfigField("Boolean", "USE_MOCK_DATA", "false")
             buildConfigField("String", "GLITCH_HOST", "\"http://10.0.2.2:3000\"")
+            buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8080/api/\"")
         }
         release {
             isMinifyEnabled = false
             buildConfigField("Boolean", "USE_MOCK_DATA", "false")
             buildConfigField("String", "GLITCH_HOST", "\"https://glitch.sethyrung.com\"")
+            buildConfigField("String", "BASE_URL", "\"https://easypay-backend-production-9162.up.railway.app/api/\"")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

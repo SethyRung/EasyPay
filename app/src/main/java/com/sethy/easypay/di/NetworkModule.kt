@@ -2,7 +2,6 @@ package com.sethy.easypay.di
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.sethy.easypay.BuildConfig
-import com.sethy.easypay.data.api.ApiProvider
 import com.sethy.easypay.data.api.AuthApi
 import com.sethy.easypay.data.api.AuthInterceptor
 import com.sethy.easypay.data.api.NotificationApi
@@ -79,7 +78,7 @@ object NetworkModule {
         json: Json,
         @Named("default") okHttpClient: OkHttpClient
     ): Retrofit = Retrofit.Builder()
-        .baseUrl(ApiProvider.BASE_URL)
+        .baseUrl(BuildConfig.BASE_URL)
         .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
         .client(okHttpClient)
         .build()
@@ -92,7 +91,7 @@ object NetworkModule {
         json: Json,
         @Named("authOnly") okHttpClient: OkHttpClient
     ): Retrofit = Retrofit.Builder()
-        .baseUrl(ApiProvider.BASE_URL)
+        .baseUrl(BuildConfig.BASE_URL)
         .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
         .client(okHttpClient)
         .build()

@@ -21,6 +21,15 @@ A modern Android wallet demo app built with **Jetpack Compose** and **Material 3
 - **Auth**: better-auth session token (opaque, 7-day, auto-extended) stored via AndroidX Security Crypto
 - **Mock data**: JSON assets loaded at runtime (toggled via `BuildConfig.USE_MOCK_DATA`)
 
+## Configuration
+
+Production endpoints are wired in via two build-time values:
+
+- `BASE_URL` — `data/api/ApiProvider.kt`, `https://easypay-backend-production-9162.up.railway.app/api/`. Single Kotlin constant; both debug and release hit the same backend.
+- `GLITCH_HOST` — `app/build.gradle.kts`, `https://glitch.sethyrung.com`. Set per buildType (currently identical for debug and release).
+
+Cleartext is whitelisted only for `10.0.2.2` / `localhost` / `127.0.0.1` in `res/xml/network_security_config.xml`; production traffic is HTTPS.
+
 ## Build
 
 ```bash

@@ -1,6 +1,7 @@
 package com.sethy.easypay.data.api
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import com.sethy.easypay.BuildConfig
 import com.sethy.easypay.data.local.AuthTokenManager
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
@@ -36,7 +37,7 @@ class ApiProvider(
             .build()
 
         val retrofit = Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(BuildConfig.BASE_URL)
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .client(client)
             .build()
@@ -58,15 +59,11 @@ class ApiProvider(
     @OptIn(ExperimentalSerializationApi::class)
     private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(BuildConfig.BASE_URL)
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .client(okHttpClient)
             .build()
     }
 
     fun <T> createService(serviceClass: Class<T>): T = retrofit.create(serviceClass)
-
-    companion object {
-        const val BASE_URL = "http://10.0.2.2:8080/api/"
-    }
 }
