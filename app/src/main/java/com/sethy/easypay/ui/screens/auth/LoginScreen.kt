@@ -15,6 +15,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -43,12 +45,12 @@ import com.sethy.easypay.design.Canvas
 import com.sethy.easypay.design.EasyPaySpacing
 import com.sethy.easypay.design.EasyPayTheme
 import com.sethy.easypay.design.EasyPayTypography
-import com.sethy.easypay.design.Error
 import com.sethy.easypay.design.Ink
 import com.sethy.easypay.design.Muted
 import com.sethy.easypay.design.Primary
 import com.sethy.easypay.design.components.ButtonPrimary
 import com.sethy.easypay.design.components.ButtonTextLink
+import com.sethy.easypay.design.components.EasyPaySnackbarHost
 import com.sethy.easypay.design.components.EasyPayWordmark
 import com.sethy.easypay.design.components.TextInput
 import com.sethy.easypay.ui.state.LoginEffect
@@ -65,6 +67,7 @@ fun LoginScreen(
 ) {
     val state by viewModel.loginState.collectAsStateWithLifecycle()
     var passwordVisible by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
         viewModel.loginEffect.collect { effect ->
@@ -75,9 +78,19 @@ fun LoginScreen(
         }
     }
 
+    LaunchedEffect(state.errorMessage) {
+        val message = state.errorMessage ?: return@LaunchedEffect
+        snackbarHostState.currentSnackbarData?.dismiss()
+        val result = snackbarHostState.showSnackbar(message)
+        if (result == SnackbarResult.Dismissed) {
+            viewModel.onLoginEvent(LoginEvent.DismissError)
+        }
+    }
+
     Scaffold(
         modifier = modifier,
-        containerColor = Canvas
+        containerColor = Canvas,
+        snackbarHost = { EasyPaySnackbarHost(hostState = snackbarHostState) }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -213,14 +226,6 @@ fun LoginScreen(
                 )
             }
 
-            state.errorMessage?.let {
-                Spacer(modifier = Modifier.height(EasyPaySpacing.md))
-                Text(
-                    text = it,
-                    style = EasyPayTypography.caption,
-                    color = Error
-                )
-            }
         }
     }
 }
