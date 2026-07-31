@@ -124,7 +124,7 @@ class ProfileViewModelTest {
     }
 
     @Test
-    fun ConfirmLogout_emits_warning_when_server_logout_fails() = runTest {
+    fun ConfirmLogout_writes_error_to_state_when_server_logout_fails() = runTest {
         val getCurrentUser: GetCurrentUserUseCase = mock()
         val logoutUseCase: LogoutUseCase = mock()
         whenever(getCurrentUser()).thenReturn(Result.success(testUser))
@@ -137,12 +137,12 @@ class ProfileViewModelTest {
 
         vm.effect.test {
             vm.onEvent(ProfileEvent.ConfirmLogout)
+            testScheduler.runCurrent()
+            assertEquals("Logout failed: network error", vm.state.value.errorMessage)
+            assertEquals(testUser, vm.state.value.user)
             advanceUntilIdle()
-            assertEquals(
-                ProfileEffect.ShowError("Logout failed: network error"),
-                awaitItem()
-            )
             assertEquals(ProfileEffect.NavigateToLogin, awaitItem())
+            cancelAndIgnoreRemainingEvents()
         }
     }
 

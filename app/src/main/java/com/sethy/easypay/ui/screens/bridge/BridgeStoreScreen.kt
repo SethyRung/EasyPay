@@ -53,10 +53,10 @@ import com.sethy.easypay.design.EasyPayTypography
 import com.sethy.easypay.design.Error
 import com.sethy.easypay.design.Ink
 import com.sethy.easypay.design.Muted
-import com.sethy.easypay.design.OnDark
 import com.sethy.easypay.design.Primary
 import com.sethy.easypay.design.Success
 import com.sethy.easypay.design.SurfaceCard
+import com.sethy.easypay.design.components.EasyPayErrorBanner
 import com.sethy.easypay.design.components.TopNav
 import com.sethy.easypay.ui.viewmodel.BridgeStoreViewModel
 
@@ -109,32 +109,13 @@ fun BridgeStoreScreen(
             }
 
             errorMessage?.let { message ->
-                Surface(
+                EasyPayErrorBanner(
+                    message = message,
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .padding(EasyPaySpacing.xl)
-                        .fillMaxWidth(),
-                    shape = RoundedCornerShape(EasyPayRadius.md),
-                    color = Error.copy(alpha = 0.92f),
-                    contentColor = OnDark
-                ) {
-                    Row(
-                        modifier = Modifier.padding(EasyPaySpacing.md),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(EasyPaySpacing.sm)
-                    ) {
-                        Icon(
-                            imageVector = Lucide.TriangleAlert,
-                            contentDescription = null,
-                            tint = OnDark
-                        )
-                        Text(
-                            text = message,
-                            style = EasyPayTypography.bodySM,
-                            color = OnDark
-                        )
-                    }
-                }
+                        .fillMaxWidth()
+                )
             }
         }
     }

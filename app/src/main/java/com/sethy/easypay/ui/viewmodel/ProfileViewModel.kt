@@ -78,15 +78,17 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             val result = logoutUseCase()
             if (result.isFailure) {
-                _effect.send(
-                    ProfileEffect.ShowError(
-                        result.exceptionOrNull()?.message
-                            ?: "Server logout failed. You are logged out locally."
-                    )
-                )
+                val message = result.exceptionOrNull()?.message
+                    ?: "Server logout failed. You are logged out locally."
+                _state.value = _state.value.copy(errorMessage = message)
+                kotlinx.coroutines.delay(LOGOUT_FAILURE_DISPLAY_MS)
             }
             _state.value = ProfileUiState()
             _effect.send(ProfileEffect.NavigateToLogin)
         }
+    }
+
+    private companion object {
+        const val LOGOUT_FAILURE_DISPLAY_MS = 2000L
     }
 }

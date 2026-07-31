@@ -7,4 +7,5 @@ sealed interface NotificationsEvent {
     data object MarkAllRead : NotificationsEvent
     data object Back : NotificationsEvent
     data object DismissError : NotificationsEvent
+    data object DismissTransientError : NotificationsEvent
 }

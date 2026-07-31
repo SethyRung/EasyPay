@@ -21,6 +21,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
@@ -51,6 +53,7 @@ import com.sethy.easypay.design.Ink
 import com.sethy.easypay.design.Muted
 import com.sethy.easypay.design.Primary
 import com.sethy.easypay.design.Success
+import com.sethy.easypay.design.components.EasyPaySnackbarHost
 import com.sethy.easypay.design.components.TopNav
 import com.sethy.easypay.ui.state.NotificationTab
 import com.sethy.easypay.ui.state.NotificationsEffect
@@ -68,14 +71,24 @@ fun NotificationsScreen(
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
                 NotificationsEffect.NavigateBack -> onBackClick()
                 is NotificationsEffect.NavigateToTransactionDetail -> onNavigateToTransactionDetail(effect.id)
-                is NotificationsEffect.ShowError -> { /* Handled via state.errorMessage */ }
+                is NotificationsEffect.ShowError -> { /* Handled via state.transientErrorMessage */ }
             }
+        }
+    }
+
+    LaunchedEffect(state.transientErrorMessage) {
+        val message = state.transientErrorMessage ?: return@LaunchedEffect
+        snackbarHostState.currentSnackbarData?.dismiss()
+        val result = snackbarHostState.showSnackbar(message)
+        if (result == SnackbarResult.Dismissed) {
+            viewModel.onEvent(NotificationsEvent.DismissTransientError)
         }
     }
 
@@ -88,7 +101,8 @@ fun NotificationsScreen(
                 onBackClick = { viewModel.onEvent(NotificationsEvent.Back) }
             )
         },
-        containerColor = Canvas
+        containerColor = Canvas,
+        snackbarHost = { EasyPaySnackbarHost(hostState = snackbarHostState) }
     ) { padding ->
         Column(
             modifier = Modifier

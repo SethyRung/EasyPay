@@ -54,6 +54,9 @@ class NotificationsViewModel @Inject constructor(
             NotificationsEvent.DismissError -> {
                 _state.value = _state.value.copy(errorMessage = null)
             }
+            NotificationsEvent.DismissTransientError -> {
+                _state.value = _state.value.copy(transientErrorMessage = null)
+            }
         }
     }
 
@@ -86,7 +89,9 @@ class NotificationsViewModel @Inject constructor(
                     _state.value = _state.value.copy(notifications = updated)
                 }
                 .onFailure { error ->
-                    _effect.send(NotificationsEffect.ShowError(error.message ?: "Failed to mark read"))
+                    _state.value = _state.value.copy(
+                        transientErrorMessage = error.message ?: "Failed to mark read"
+                    )
                 }
         }
     }
