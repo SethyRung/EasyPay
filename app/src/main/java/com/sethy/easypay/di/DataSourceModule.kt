@@ -18,6 +18,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.serialization.json.Json
 import javax.inject.Singleton
 
 @Module
@@ -43,10 +44,11 @@ object DataSourceModule {
     fun provideAuthDataSource(
         @ApplicationContext context: Context,
         authApi: AuthApi,
-        authSessionNotifier: AuthSessionNotifier
+        authSessionNotifier: AuthSessionNotifier,
+        json: Json
     ): AuthDataSource = if (BuildConfig.USE_MOCK_DATA) {
         MockAuthDataSource(seed = { MockDataLoader.loadUser(context) })
     } else {
-        RemoteAuthDataSource(authApi, authSessionNotifier)
+        RemoteAuthDataSource(authApi, authSessionNotifier, json)
     }
 }
